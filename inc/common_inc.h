@@ -8,8 +8,8 @@
 
 #include <iostream>
 #include <fstream>
-
 #include <exception>
+#include <cassert>
 
 #include <Errors.hpp>
 

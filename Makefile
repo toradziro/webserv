@@ -12,12 +12,14 @@ SRC_DIR			= ./srcs/
 
 SRCS_NAMES		=	main.cpp \
 					Parser/Parser.cpp \
+					Parser/Lexem.cpp \
+					Parser/LexemsCollection.cpp \
 					Server/Server.cpp \
 
 SRCS		= $(addprefix $(SRC_DIR), $(SRCS_NAMES))
 
 ifeq ($(MODE), Debug)
-	CXXFLAGS += -D_V_DEBUG_ -g -fsanitize=address
+	CXXFLAGS += -D_DEBUG -g -fsanitize=address
 else
 	CXXFLAGS += -O2 -fpie
 endif

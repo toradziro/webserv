@@ -20,6 +20,14 @@ public:
         locations.addLocation(locationName, locationRoot);
     }
 
+#ifdef _DEBUG
+    void printServer() {
+        std::cout << "ip addres: " << ipAddress << std::endl;
+        std::cout << "port: " << listenPort << std::endl;
+        locations.printLocations();
+    }
+#endif
+
 private:
     Server(const Server& other);
     Server& operator=(const Server& other);

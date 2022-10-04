@@ -14,6 +14,9 @@ int main(int argc, char** argv) {
     }
     try {
         Server* serv = Parser::parseConfig(argv[1]);
+#ifdef _DEBUG
+        serv->printServer();
+#endif
         delete serv;
     } catch (CException* e) {
         std::cout << e->getDescription() << std::endl;

@@ -21,6 +21,15 @@ public:
         locations[locationName] = rootPath;
     }
 
+#ifdef _DEBUG
+    void printLocations() {
+        std::cout << "Locations:" << std::endl;
+        for(auto it : locations) {
+            std::cout << it.first << "  ---  " << it.second << std::endl;
+        }
+    }
+#endif
+
 private:
     Locations(const Locations& orig);
     Locations& operator=(const Locations& orig);

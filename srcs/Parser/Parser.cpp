@@ -1,4 +1,6 @@
 #include <Parser.hpp>
+#include <Lexem.hpp>
+#include <LexemsCollection.hpp>
 
 namespace Parser {
 
@@ -38,25 +40,12 @@ static int getFileSize(int fd) {
     return st.st_size;
 }
 
-/* Will need for lexer
-static bool checkValidLabel(std::string label) {
-    for(const auto& it : validLabels) {
-        if(it == label) {
-            return true;
-        }
-    }
-    return false;
-}
-*/
-
-static std::vector<std::string> makeTockens(const char* readFile) {
-    // TODO: Change to move semantic
-
+static std::vector<token> makeTokens(const char* readFile) {
     size_t len = strlen(readFile);
-    std::vector<std::string> tockens;
+    std::vector<token> tockens;
 
     for(size_t i = 0; i < len; ++i) {
-        std::string lexem = "";
+        token localTocken = "";
         bool addLexem = false;
         while(i < len &&
             readFile[i] != ' ' &&
@@ -64,13 +53,61 @@ static std::vector<std::string> makeTockens(const char* readFile) {
             readFile[i] != '\n')
         {
             addLexem = true;
-            lexem += readFile[i];
+            localTocken += readFile[i];
             ++i;
         }
         if(addLexem == true)
-            tockens.push_back(lexem);
+            tockens.push_back(std::move(localTocken));
     }
-    return tockens;
+    return std::move(tockens);
+}
+
+static void parseServer(LexemsCollection& lexems,
+    const std::vector<token>& tokens, size_t& currentIndex)
+{
+    if(tokens[currentIndex] == "{") {
+        ++currentIndex;
+    } else {
+        checkError(true, "lost curly bracket in server declaration");
+    }
+    for(;currentIndex < tokens.size(); ++currentIndex) {
+        if(tokens[currentIndex] == "location") {
+            Lexem* lexem = new LocationLexem();
+            lexem->parseLexem(tokens, currentIndex);
+            lexems.addLexem(lexem);
+        } else if(tokens[currentIndex] == "listen") {
+            Lexem* lexem = new ListenLexem();
+            lexem->parseLexem(tokens, currentIndex);
+            lexems.addLexem(lexem);
+        } else if(tokens[currentIndex] == "}") {
+            break;
+        } else {
+            checkError(true, "wrong syntax: " + tokens[currentIndex]);
+        }
+    }
+    if(tokens[currentIndex] != "}") {
+        checkError(true, "lost curly bracket in server closing");
+    }
+}
+
+static LexemsCollection makeLexems(const std::vector<token>& tokens) {
+    LexemsCollection lexems;
+#ifdef _DEBUG
+    for(size_t i = 0; i < tokens.size(); ++i) {
+        std::cout << tokens[i] << std::endl;
+    }
+#endif
+    for(size_t i = 0; i < tokens.size(); ++i) {
+        if(tokens[i] == "server") {
+            ++i;
+            parseServer(lexems, tokens, i);
+        } else if(tokens[i] == "}") {
+            break;
+        } else {
+            checkError(true, "unknown config syntax: " + tokens[i]);
+        }
+    }
+    return std::move(lexems);
 }
 
 Server* parseConfig(const std::string& confPath) {
@@ -87,18 +124,17 @@ Server* parseConfig(const std::string& confPath) {
                             PROT_READ,
                             MAP_PRIVATE,
                             configFileFd, 0);
-
     checkError(configMapping == NULL, "config mapping failed");
+
     // Make tockens from config
-    std::vector<std::string> tockens = makeTockens(configMapping);
-    checkError(tockens.size() == 0, "empty config");
+    std::vector<token> tokens = makeTokens(configMapping);
+    checkError(tokens.size() == 0, "empty config");
+
     // Unmup file 'cause we don't need it anymore
     checkError(munmap((void*)configMapping, fileSize) == -1, "config unmapping failed");
-    
-    for(size_t i = 0; i < tockens.size(); ++i) {
-        std::cout << tockens[i] << std::endl;
-    }
 
+    LexemsCollection lexems = makeLexems(tokens);
+    lexems.addToServer(serv);
     return serv;
 }
 }

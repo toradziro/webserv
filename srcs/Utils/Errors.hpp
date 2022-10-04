@@ -1,3 +1,5 @@
+#pragma once
+
 #include <common_inc.h>
 
 #define _FLINE_ CException::fileLine(__FILE__, __LINE__)
