@@ -1,6 +1,24 @@
 #include <Lexem.hpp>
+#include <Errors.hpp>
 
 #define DEFAULT_PORT 80
+
+namespace Lexem {
+
+// Fabric function
+Lexem* createLexemByToken(const token& _token) {
+    Lexem* lexem;
+    if(_token == "location") {
+        lexem = new LocationLexem();
+    } else if(_token == "listen") {
+        lexem = new ListenLexem();
+    } else if(_token == "server_name") {
+        lexem = new ServerNameLexem();
+    } else {
+        checkError(true, "wrong syntax: " + _token);
+    }
+    return lexem;
+}
 
 static void increaseIndex(size_t& currentIndex, size_t tokensSize) {
     ++currentIndex;
@@ -63,3 +81,4 @@ void ServerNameLexem::parseLexem(const std::vector<token> tokens, size_t& curren
     increaseIndex(currentIndex, tokens.size());
     serverName = std::move(tokens[currentIndex]);
 }
+} // namespace Lexem

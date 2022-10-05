@@ -6,6 +6,8 @@
 
 typedef std::string token;
 
+namespace Lexem {
+
 // pure virtual class a.k.a. interface for Lexems
 struct Lexem {
     virtual void addToServer(Server* serv) = 0;
@@ -44,3 +46,7 @@ public:
 private:
     std::string serverName;
 };
+
+Lexem* createLexemByToken(const token& _token);
+
+} // namespace Lexem
