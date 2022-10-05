@@ -12,15 +12,19 @@ int main(int argc, char** argv) {
         usage(argv[0]);
         exit(EXIT_FAILURE);
     }
+
     try {
         Server* serv = Parser::parseConfig(argv[1]);
 #ifdef _DEBUG
         serv->printServer();
 #endif
+        serv->prepareForStart();
+        serv->start();
         delete serv;
     } catch (CException* e) {
         std::cout << e->getDescription() << std::endl;
         delete e;
     }
+
     exit(EXIT_SUCCESS);
 }

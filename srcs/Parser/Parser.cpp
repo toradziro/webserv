@@ -115,6 +115,7 @@ Server* parseConfig(const std::string& confPath) {
 
     LexemsCollection lexems = makeLexems(tokens);
     lexems.addToServer(serv);
+    serv->checkServerInstance();
     return serv;
 }
 }

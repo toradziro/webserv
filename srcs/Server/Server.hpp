@@ -3,15 +3,21 @@
 #include <common_inc.h>
 #include <Locations.hpp>
 
+#define EVENTS_NUM 1024
+#define INFINITE -1
+
 class Server {
 public:
-    Server() : m_ipAddress(""), m_serverName(""), m_listenPort(0) { }
+    Server();
     ~Server() { }
 
     void setListenPort(uint16_t port);
     void setIpAddress(const std::string& ipAddress);
     void setServerName(const std::string& serverName);
     void addLocation(const std::string& locationName, const std::string& locationRoot);
+    void checkServerInstance();
+    void prepareForStart();
+    void start();
 
 #ifdef _DEBUG
     void printServer();
@@ -22,7 +28,11 @@ private:
     Server& operator=(const Server& other);
 
     Locations m_locations;
+    struct epoll_event m_epollEvent;
     std::string m_ipAddress;
     std::string m_serverName;
+    int m_epollFd;
+    int m_serverSocket;
     uint16_t m_listenPort;
+	bool m_isRunning;
 };
