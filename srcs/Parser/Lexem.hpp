@@ -34,3 +34,13 @@ private:
     std::string ipAddress;
     uint16_t port;
 };
+
+class ServerNameLexem : public Lexem {
+public:
+    // Interface realization
+    void parseLexem(const std::vector<token> tokens, size_t& currentIndex) override;
+    void addToServer(Server* serv) override;
+    ~ServerNameLexem() {}
+private:
+    std::string serverName;
+};

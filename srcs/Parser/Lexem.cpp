@@ -54,3 +54,12 @@ void ListenLexem::parseLexem(const std::vector<token> tokens, size_t& currentInd
         port = DEFAULT_PORT;
     }
 }
+
+void ServerNameLexem::addToServer(Server* serv) {
+    serv->setServerName(std::move(serverName));
+}
+
+void ServerNameLexem::parseLexem(const std::vector<token> tokens, size_t& currentIndex) {
+    increaseIndex(currentIndex, tokens.size());
+    serverName = std::move(tokens[currentIndex]);
+}

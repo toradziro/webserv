@@ -4,35 +4,21 @@
 
 class Locations {
 public:
-    explicit Locations() {}
-    bool hasLocation(const std::string& locationName) {
-        if(locations.count(locationName) == 0) {
-            return false;
-        }
-        return true;
-    }
+    Locations() {}
+    bool hasLocation(const std::string& locationName);
 
     // return path 
-    std::string getRoot(const std::string& locationName) {
-        return locations[locationName];
-    }
+    std::string getRoot(const std::string& locationName);
 
-    void addLocation(const std::string& locationName, const std::string& rootPath) {
-        locations[locationName] = rootPath;
-    }
+    void addLocation(const std::string& locationName, const std::string& rootPath);
 
 #ifdef _DEBUG
-    void printLocations() {
-        std::cout << "Locations:" << std::endl;
-        for(auto it : locations) {
-            std::cout << it.first << "  ---  " << it.second << std::endl;
-        }
-    }
+    void printLocations();
 #endif
 
 private:
-    Locations(const Locations& orig);
-    Locations& operator=(const Locations& orig);
+    Locations(const Locations& /*orig*/);
+    Locations& operator=(const Locations& /*orig*/);
 
     // key is location, value is its path
     std::map<std::string, std::string> locations;

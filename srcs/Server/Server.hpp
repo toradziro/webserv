@@ -5,34 +5,24 @@
 
 class Server {
 public:
-    Server() : ipAddress(""), listenPort(0) { }
+    Server() : m_ipAddress(""), m_serverName(""), m_listenPort(0) { }
     ~Server() { }
 
-    void setListenPort(uint16_t port) {
-        listenPort = port;
-    }
-
-    void setIpAddress(const std::string& _ipAddress) {
-        ipAddress = _ipAddress;
-    }
-
-    void addLocation(const std::string& locationName, const std::string& locationRoot) {
-        locations.addLocation(locationName, locationRoot);
-    }
+    void setListenPort(uint16_t port);
+    void setIpAddress(const std::string& ipAddress);
+    void setServerName(const std::string& serverName);
+    void addLocation(const std::string& locationName, const std::string& locationRoot);
 
 #ifdef _DEBUG
-    void printServer() {
-        std::cout << "ip addres: " << ipAddress << std::endl;
-        std::cout << "port: " << listenPort << std::endl;
-        locations.printLocations();
-    }
+    void printServer();
 #endif
 
 private:
     Server(const Server& other);
     Server& operator=(const Server& other);
 
-    Locations locations;
-    std::string ipAddress;
-    uint16_t listenPort;
+    Locations m_locations;
+    std::string m_ipAddress;
+    std::string m_serverName;
+    uint16_t m_listenPort;
 };

@@ -14,6 +14,7 @@ SRCS_NAMES		=	main.cpp \
 					Parser/Parser.cpp \
 					Parser/Lexem.cpp \
 					Parser/LexemsCollection.cpp \
+					Server/Locations.cpp \
 					Server/Server.cpp \
 
 SRCS		= $(addprefix $(SRC_DIR), $(SRCS_NAMES))
