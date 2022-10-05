@@ -79,6 +79,10 @@ static void parseServer(LexemsCollection& lexems,
             Lexem* lexem = new ListenLexem();
             lexem->parseLexem(tokens, currentIndex);
             lexems.addLexem(lexem);
+        } else if(tokens[currentIndex] == "server_name") {
+            Lexem* lexem = new ServerNameLexem();
+            lexem->parseLexem(tokens, currentIndex);
+            lexems.addLexem(lexem);
         } else if(tokens[currentIndex] == "}") {
             break;
         } else {
@@ -92,11 +96,6 @@ static void parseServer(LexemsCollection& lexems,
 
 static LexemsCollection makeLexems(const std::vector<token>& tokens) {
     LexemsCollection lexems;
-#ifdef _DEBUG
-    for(size_t i = 0; i < tokens.size(); ++i) {
-        std::cout << tokens[i] << std::endl;
-    }
-#endif
     for(size_t i = 0; i < tokens.size(); ++i) {
         if(tokens[i] == "server") {
             ++i;
