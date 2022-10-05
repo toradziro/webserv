@@ -11,9 +11,14 @@
 #include <exception>
 #include <cassert>
 
-#include <Errors.hpp>
-
+#include <unistd.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/epoll.h>
+#include <sys/socket.h>
 #include <fcntl.h>
 #include <string.h>
+#include <arpa/inet.h>
+#include <errno.h>
+
+#include <Errors.hpp>

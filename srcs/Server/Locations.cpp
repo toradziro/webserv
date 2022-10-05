@@ -16,6 +16,10 @@ void Locations::addLocation(const std::string& locationName, const std::string& 
     locations[locationName] = rootPath;
 }
 
+bool Locations::checkIsEmpty() {
+    return locations.empty();
+}
+
 #ifdef _DEBUG
 void Locations::printLocations() {
     std::cout << "Locations:" << std::endl;

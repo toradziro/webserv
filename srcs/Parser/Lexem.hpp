@@ -24,6 +24,8 @@ public:
 private:
     // key - label, value - rootPath
     std::pair<std::string, std::string> location;
+    bool checkContainEnvVar(const std::string& rootPath);
+    void readEnvVar(std::string& rootPath);
 };
 
 class ListenLexem : public Lexem {

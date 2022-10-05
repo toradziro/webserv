@@ -2,6 +2,8 @@
 
 #include <common_inc.h>
 
+// made by tutorial http://ders.stml.net/cpp/intmsg/intmsg.html
+
 #define _FLINE_ CException::fileLine(__FILE__, __LINE__)
 // Macroces for exception generation
 #define checkError(val, descr) if((val) == true){throw newCException(_FLINE_, descr);}
@@ -19,7 +21,8 @@ public:
 
     std::string getDescription() {
         return "CException [" + std::string(location.fileName) + \
-                ":" + std::to_string(location.line) + "] " + description;
+                ":" + std::to_string(location.line) + "] " + description + \
+                "\nerrno to string: " + std::string(strerror(errno));
     }
 
     friend CException* newCException(const fileLine& loc, const std::string& msg) {

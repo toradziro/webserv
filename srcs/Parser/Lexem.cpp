@@ -7,15 +7,13 @@ namespace Lexem {
 
 // Fabric function
 Lexem* createLexemByToken(const token& _token) {
-    Lexem* lexem;
+    Lexem* lexem = nullptr;
     if(_token == "location") {
         lexem = new LocationLexem();
     } else if(_token == "listen") {
         lexem = new ListenLexem();
     } else if(_token == "server_name") {
         lexem = new ServerNameLexem();
-    } else {
-        checkError(true, "wrong syntax: " + _token);
     }
     return lexem;
 }
@@ -39,6 +37,9 @@ void LocationLexem::parseLexem(const std::vector<token> tokens, size_t& currentI
         checkError(tokens[currentIndex] != "root", "missed root keyword in location");
         increaseIndex(currentIndex, tokens.size());
         rootPath = tokens[currentIndex];
+        if(checkContainEnvVar(rootPath)) {
+            readEnvVar(rootPath);
+        }
         increaseIndex(currentIndex, tokens.size());
         checkError(tokens[currentIndex] != "}", "unclosed root section");
     } else {
@@ -46,6 +47,34 @@ void LocationLexem::parseLexem(const std::vector<token> tokens, size_t& currentI
     }
     location.first = std::move(locationStr);
     location.second = std::move(rootPath);
+}
+
+bool LocationLexem::checkContainEnvVar(const std::string& rootPath) {
+    for(size_t i = 0; i < rootPath.size(); ++i) {
+        if(rootPath[i] == '$') {
+            return true;
+        }
+    }
+    return false;
+}
+
+void LocationLexem::readEnvVar(std::string& rootPath) {
+    std::string beforeEnv;
+    std::string envName;
+    std::string afterEnv;
+    size_t index = 0;
+    for(; index < rootPath.size() && rootPath[index] != '$'; ++index) {
+        beforeEnv += rootPath[index];
+    }
+    ++index;
+    for(; index < rootPath.size() && rootPath[index] != '/'; ++index) {
+        envName += rootPath[index];
+    }
+    for(; index < rootPath.size(); ++index) {
+        afterEnv += rootPath[index];
+    }
+    char* envValue = getenv(envName.c_str());
+    rootPath = std::move(beforeEnv + std::string(envValue) + afterEnv);
 }
 
 void ListenLexem::addToServer(Server* serv) {
