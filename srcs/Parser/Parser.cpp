@@ -4,33 +4,22 @@
 
 namespace Parser {
 
-/*
-Итоговая конфигурация блока server должна выглядеть следующим образом:
-
-server {
-    location / {
-        root /data/www;
-    }
-
-    location /images/ {
-        root /data;
-    }
-}
-Это уже работающая конфигурация сервера, слушающего на стандартном порту 80 и доступного на локальном компьютере по адресу http://localhost/. 
-В ответ на запросы, URI которых начинаются с /images/, сервер будет отправлять файлы из каталога /data/images. Например, 
-на запрос http://localhost/images/example.png nginx отправит в ответ файл /data/images/example.png. 
-Если же этот файл не существует, nginx отправит ответ, указывающий на ошибку 404. 
-Запросы, URI которых не начинаются на /images/, будут отображены на каталог /data/www. 
-Например, в результате запроса http://localhost/some/example.html в ответ будет отправлен файл /data/www/some/example.html.
-*/
-
-// Valid sintax key-words for config file
 std::string validLabels[] {
     "server",
     "listen",
     "location",
-    "root"
+    "root",
+    "server_name",
 };
+
+static bool isValidLabel(const token& _token) {
+    for(size_t i = 0; i < validLabels->size(); ++i) {
+        if(_token == validLabels[i]) {
+            return true;
+        }
+    }
+    return false;
+}
 
 static int getFileSize(int fd) {
     struct stat st;
@@ -71,16 +60,8 @@ static void parseServer(LexemsCollection& lexems,
         checkError(true, "lost curly bracket in server declaration");
     }
     for(;currentIndex < tokens.size(); ++currentIndex) {
-        if(tokens[currentIndex] == "location") {
-            Lexem* lexem = new LocationLexem();
-            lexem->parseLexem(tokens, currentIndex);
-            lexems.addLexem(lexem);
-        } else if(tokens[currentIndex] == "listen") {
-            Lexem* lexem = new ListenLexem();
-            lexem->parseLexem(tokens, currentIndex);
-            lexems.addLexem(lexem);
-        } else if(tokens[currentIndex] == "server_name") {
-            Lexem* lexem = new ServerNameLexem();
+        if(isValidLabel(tokens[currentIndex])) {
+            Lexem::Lexem* lexem = Lexem::createLexemByToken(tokens[currentIndex]);
             lexem->parseLexem(tokens, currentIndex);
             lexems.addLexem(lexem);
         } else if(tokens[currentIndex] == "}") {

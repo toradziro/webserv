@@ -2,7 +2,7 @@
 
 #include <Lexem.hpp>
 
-class LexemsCollection : public Lexem {
+class LexemsCollection : public Lexem::Lexem {
 public:
     LexemsCollection() {}
     // Need to free all interfaces after fill
