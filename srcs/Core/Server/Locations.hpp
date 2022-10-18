@@ -16,7 +16,7 @@ public:
 #endif
 
 private:
-    Locations(const Locations& /*orig*/);
+    Locations(const Locations& orig);
     Locations& operator=(const Locations& /*orig*/);
 
     // key is location, value is its path

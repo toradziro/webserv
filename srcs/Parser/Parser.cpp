@@ -10,6 +10,7 @@ std::string validLabels[] {
     "location",
     "root",
     "server_name",
+    "worker_threads"
 };
 
 static bool isValidLabel(const token& _token) {
@@ -61,7 +62,7 @@ static void parseServer(LexemsCollection& lexems,
     }
     for(;currentIndex < tokens.size(); ++currentIndex) {
         if(isValidLabel(tokens[currentIndex])) {
-            Lexem::Lexem* lexem = Lexem::createLexemByToken(tokens[currentIndex]);
+            Lexem::InterfaceLexem* lexem = Lexem::createLexemByToken(tokens[currentIndex]);
             lexem->parseLexem(tokens, currentIndex);
             lexems.addLexem(lexem);
         } else if(tokens[currentIndex] == "}") {

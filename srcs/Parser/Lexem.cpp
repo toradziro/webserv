@@ -6,8 +6,8 @@
 namespace Lexem {
 
 // Fabric function
-Lexem* createLexemByToken(const token& _token) {
-    Lexem* lexem = nullptr;
+InterfaceLexem* createLexemByToken(const token& _token) {
+    InterfaceLexem* lexem = nullptr;
     if(_token == "location") {
         lexem = new LocationLexem();
     } else if(_token == "listen") {
@@ -24,7 +24,7 @@ static void increaseIndex(size_t& currentIndex, size_t tokensSize) {
 }
 
 void LocationLexem::addToServer(Server* serv) {
-    serv->addLocation(std::move(location.first), std::move(location.second));
+    serv->addLocation(std::move(m_location.first), std::move(m_location.second));
 }
 
 void LocationLexem::parseLexem(const std::vector<token> tokens, size_t& currentIndex) {
@@ -45,8 +45,8 @@ void LocationLexem::parseLexem(const std::vector<token> tokens, size_t& currentI
     } else {
         rootPath = tokens[currentIndex];
     }
-    location.first = std::move(locationStr);
-    location.second = std::move(rootPath);
+    m_location.first = std::move(locationStr);
+    m_location.second = std::move(rootPath);
 }
 
 bool LocationLexem::checkContainEnvVar(const std::string& rootPath) {
@@ -78,8 +78,8 @@ void LocationLexem::readEnvVar(std::string& rootPath) {
 }
 
 void ListenLexem::addToServer(Server* serv) {
-    serv->setIpAddress(std::move(ipAddress));
-    serv->setListenPort(port);
+    serv->setIpAddress(std::move(m_ipAddress));
+    serv->setListenPort(m_port);
 }
 
 void ListenLexem::parseLexem(const std::vector<token> tokens, size_t& currentIndex) {
@@ -91,23 +91,23 @@ void ListenLexem::parseLexem(const std::vector<token> tokens, size_t& currentInd
             needParsePort = true;
             break;
         }
-        ipAddress += tokens[currentIndex][index];
+        m_ipAddress += tokens[currentIndex][index];
     }
     if(needParsePort) {
         ++index;
         const char* tokenAsPtr = tokens[currentIndex].c_str();
-        port = static_cast<uint16_t>(atoi(&(tokenAsPtr[index])));
+        m_port = static_cast<uint16_t>(atoi(&(tokenAsPtr[index])));
     } else {
-        port = DEFAULT_PORT;
+        m_port = DEFAULT_PORT;
     }
 }
 
 void ServerNameLexem::addToServer(Server* serv) {
-    serv->setServerName(std::move(serverName));
+    serv->setServerName(std::move(m_serverName));
 }
 
 void ServerNameLexem::parseLexem(const std::vector<token> tokens, size_t& currentIndex) {
     increaseIndex(currentIndex, tokens.size());
-    serverName = std::move(tokens[currentIndex]);
+    m_serverName = std::move(tokens[currentIndex]);
 }
 } // namespace Lexem

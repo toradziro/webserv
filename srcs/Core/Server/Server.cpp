@@ -1,4 +1,5 @@
 #include <Server.hpp>
+#include <Selector.hpp>
 
 Server::Server() : m_ipAddress(""), m_serverName(""), m_epollFd(-1),
     m_serverSocket(-1), m_listenPort(0), m_isRunning(false)
@@ -60,44 +61,10 @@ void Server::prepareForStart() {
 }
 
 void Server::start() {
-    struct epoll_event serverEvents[EVENTS_NUM];
     m_isRunning = true;
+    Selector selector(m_serverSocket, m_epollFd, &m_locations);
     while(m_isRunning) {
-        int eventsOccuredNum = epoll_wait(m_epollFd, serverEvents, EVENTS_NUM, INFINITE);
-        if( eventsOccuredNum == -1 ) {
-            checkError(eventsOccuredNum == -1, "epoll interface got broken on wait");
-        }
-        for(int i = 0; i < eventsOccuredNum; ++i) {
-            if(serverEvents[i].data.fd == m_serverSocket) {
-                // new connection
-                sockaddr_in clientAddress;
-                socklen_t clientAddressSize = sizeof(clientAddress);
-                struct epoll_event clientEvent;
-                int clientSocket = accept(m_serverSocket, ( sockaddr* )&clientAddress, &clientAddressSize);
-                checkError(clientSocket == -1, "can't accept client");
-                checkError(fcntl(clientSocket, F_SETFL, O_NONBLOCK) == -1, 
-                    "client wants to work only in blocking mode");
-                clientEvent.data.fd = clientSocket;
-                clientEvent.events = EPOLLIN;
-                checkError(epoll_ctl(m_epollFd, EPOLL_CTL_ADD, clientSocket, &clientEvent) == -1,
-                    "addidng client to epoll");
-#ifdef _DEBUG
-                char clientMessage[10000] = {0};
-                int messageLength = read(clientSocket, clientMessage, 10000);
-                checkError(messageLength == -1, "tried to receive msg from new client");
-                printf("Got message \"%s\" from client with fd == %d\n", clientMessage, clientSocket);
-                const char *hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
-                write(clientSocket , hello , strlen(hello));
-#endif
-            } else {
-                // msg from previosly traced connection
-                int clientFd = serverEvents[i].data.fd;
-                char clientMessage[1024];
-                int messageLength = recv(clientFd, clientMessage, 1024, 0);
-                checkError(messageLength == -1, "tried to receive msg from new client");
-                printf("Got message \"%s\" from client with fd == %d\n", clientMessage, clientFd);
-            }
-        }
+        selector.run();
     }
 }
 
