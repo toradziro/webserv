@@ -1,8 +1,8 @@
 #include <LexemsCollection.hpp>
 
 LexemsCollection::~LexemsCollection() {
-    for(size_t i = 0; i < lexems.size(); ++i) {
-        delete lexems[i];
+    for(size_t i = 0; i < m_lexems.size(); ++i) {
+        delete m_lexems[i];
     }
 }
 
@@ -11,11 +11,11 @@ void LexemsCollection::parseLexem(const std::vector<token> /*tokens*/, size_t& /
 }
 
 void LexemsCollection::addToServer(Server* serv) {
-    for(size_t i = 0; i < lexems.size(); ++i) {
-        lexems[i]->addToServer(serv);
+    for(size_t i = 0; i < m_lexems.size(); ++i) {
+        m_lexems[i]->addToServer(serv);
     }
 }
 
-void LexemsCollection::addLexem(Lexem* lexem) {
-    lexems.push_back(lexem);
+void LexemsCollection::addLexem(InterfaceLexem* lexem) {
+    m_lexems.push_back(lexem);
 }

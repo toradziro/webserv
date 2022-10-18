@@ -33,5 +33,5 @@ protected:
     CException(const fileLine& loc, const std::string& msg) :  description(msg), location(loc) {}
 private:
     std::string description;
-    fileLine location;
+    fileLine    location;
 };

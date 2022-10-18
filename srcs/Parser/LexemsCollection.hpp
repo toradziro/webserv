@@ -2,7 +2,7 @@
 
 #include <Lexem.hpp>
 
-class LexemsCollection : public Lexem::Lexem {
+class LexemsCollection : public Lexem::InterfaceLexem {
 public:
     LexemsCollection() {}
     // Need to free all interfaces after fill
@@ -13,11 +13,11 @@ public:
     // Add all lexems to a server
     void addToServer(Server* serv);
 
-    void addLexem(Lexem* lexem);
+    void addLexem(InterfaceLexem* lexem);
     // move semantic allowance
     LexemsCollection(LexemsCollection&& other) {
-        lexems = std::move(other.lexems);
+        m_lexems = std::move(other.m_lexems);
     }
 private:
-    std::vector<Lexem*> lexems;
+    std::vector<InterfaceLexem*> m_lexems;
 };

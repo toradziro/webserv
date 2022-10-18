@@ -9,46 +9,50 @@ typedef std::string token;
 namespace Lexem {
 
 // pure virtual class a.k.a. interface for Lexems
-struct Lexem {
+struct InterfaceLexem {
     virtual void addToServer(Server* serv) = 0;
     virtual void parseLexem(const std::vector<token> tokens, size_t& currentIndex) = 0;
-    virtual ~Lexem() { }
+    virtual ~InterfaceLexem() { }
 };
 
-class LocationLexem : public Lexem {
+class LocationLexem : public InterfaceLexem {
 public:
     // Interface realization
     void parseLexem(const std::vector<token> tokens, size_t& currentIndex) override;
     void addToServer(Server* serv) override;
     ~LocationLexem() {}
+
 private:
     // key - label, value - rootPath
-    std::pair<std::string, std::string> location;
+    std::pair<std::string, std::string> m_location;
+
     bool checkContainEnvVar(const std::string& rootPath);
     void readEnvVar(std::string& rootPath);
 };
 
-class ListenLexem : public Lexem {
+class ListenLexem : public InterfaceLexem {
 public:
     // Interface realization
     void parseLexem(const std::vector<token> tokens, size_t& currentIndex) override;
     void addToServer(Server* serv) override;
     ~ListenLexem() {}
+
 private:
-    std::string ipAddress;
-    uint16_t port;
+    std::string m_ipAddress;
+    uint16_t    m_port;
 };
 
-class ServerNameLexem : public Lexem {
+class ServerNameLexem : public InterfaceLexem {
 public:
     // Interface realization
     void parseLexem(const std::vector<token> tokens, size_t& currentIndex) override;
     void addToServer(Server* serv) override;
     ~ServerNameLexem() {}
+
 private:
-    std::string serverName;
+    std::string m_serverName;
 };
 
-Lexem* createLexemByToken(const token& _token);
+InterfaceLexem* createLexemByToken(const token& _token);
 
 } // namespace Lexem
