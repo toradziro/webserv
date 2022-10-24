@@ -1,6 +1,7 @@
 #include <Parser.hpp>
 #include <Lexem.hpp>
 #include <LexemsCollection.hpp>
+#include <FileFuncs.hpp>
 
 namespace Parser {
 
@@ -20,14 +21,6 @@ static bool isValidLabel(const token& _token) {
         }
     }
     return false;
-}
-
-static int getFileSize(int fd) {
-    struct stat st;
-
-    if(fstat(fd, &st) == -1)
-        return -1;
-    return st.st_size;
 }
 
 static std::vector<token> makeTokens(const char* readFile) {

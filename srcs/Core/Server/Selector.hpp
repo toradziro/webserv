@@ -13,7 +13,9 @@ public:
     void run();
 
 private:
-    int         m_serverSocket;
-    int         m_epollSocket;
-    Locations*  m_locations;
+    int                 m_serverSocket;
+    int                 m_epollSocket;
+    Locations*          m_locations;
+    RequestCollection   m_requests;
+    struct epoll_event  m_events[EVENTS_NUM];
 };

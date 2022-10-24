@@ -6,7 +6,7 @@
 
 class RequestCollection {
 public:
-    RequestCollection() { }
+    RequestCollection(Locations* locations) : m_locations(locations) { }
     void processMessage(int clientFd);
 
 private:
@@ -14,8 +14,7 @@ private:
     Locations*                      m_locations;
 
     void newConnection(int clientFd);
-    void keepHandle(int clientFd);
-    bool hasUnfinishedRequest(int clientFd);
-    RequestInterface* getRequest(int clientFd);
+    void keepHandle(int clientFd, RequestInterface* currRec);
+    bool getRequest(int clientFd, RequestInterface** request);
     void deleteFromCollection(int clientFd);
 };

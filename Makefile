@@ -28,7 +28,7 @@ SRCS		= $(addprefix $(SRC_DIR), $(SRCS_NAMES))
 ifeq ($(MODE), Debug)
 	CXXFLAGS += -D_DEBUG -g -fsanitize=address
 else
-	CXXFLAGS += -O2 -fpie
+	CXXFLAGS += -O2
 endif
 
 OBJS	= $(SRCS:.cpp=.o)

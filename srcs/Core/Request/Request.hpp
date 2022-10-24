@@ -5,7 +5,7 @@
 #include <Locations.hpp>
 
 #ifndef MSG_LEN
-# define MSG_LEN 1024
+# define MSG_LEN 8192
 #endif
 
 enum RequestType {
@@ -18,6 +18,13 @@ enum RequestType {
 enum RequestCondition {
     RC_PROCESSED,
     RC_UNFINISHED,
+};
+
+enum ResponceNum {
+    RN_200,
+    RN_404,
+
+    RN_LENGTH,
 };
 
 struct RequestInterface {
@@ -35,7 +42,12 @@ protected:
 class RequestGET : public RequestInterface {
 public:
     RequestGET(Locations* locations, char* requestBody, int clientFd);
-    ~RequestGET() { free(m_requestBody); }
+    ~RequestGET() { 
+        free(m_requestBody);
+        if(m_requestLocation != nullptr) {
+            free(m_requestLocation);
+        }
+    }
     int handleRequest();
     int getClientFd() { return m_clientFd; }
     char* getBuffer() { return m_requestBody; }
@@ -47,6 +59,7 @@ protected:
     Responce*   m_responce;
     Locations*  m_locations;
     char*       m_requestBody;
+    char*       m_requestLocation;
     int         m_clientFd;
 };
 

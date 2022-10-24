@@ -7,7 +7,7 @@ bool Locations::hasLocation(const std::string& locationName) {
     return true;
 }
 
-    // return path 
+// return path 
 std::string Locations::getRoot(const std::string& locationName) {
     return locations[locationName];
 }

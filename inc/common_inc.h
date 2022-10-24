@@ -10,6 +10,7 @@
 #include <fstream>
 #include <exception>
 #include <cassert>
+#include <csignal>
 
 #include <unistd.h>
 #include <sys/mman.h>
