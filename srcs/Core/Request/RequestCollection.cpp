@@ -8,20 +8,12 @@ static char* readNextChunk(int clientFd) {
 }
 
 void RequestCollection::processMessage(int clientFd) {
-    if(hasUnfinishedRequest(clientFd)) {
-        keepHandle(clientFd);
+    RequestInterface* request;
+    if(getRequest(clientFd, &request)) {
+        keepHandle(clientFd, request);
     } else {
         newConnection(clientFd);
     }
-}
-
-bool RequestCollection::hasUnfinishedRequest(int clientFd) {
-    for(size_t i = 0; i < m_unfinishedRequests.size(); ++i) {
-        if(m_unfinishedRequests[i]->getClientFd() == clientFd) {
-            return true;
-        }
-    }
-    return false;
 }
 
 void RequestCollection::newConnection(int clientFd) {
@@ -35,29 +27,30 @@ void RequestCollection::newConnection(int clientFd) {
     }
 }
 
-void RequestCollection::keepHandle(int clientFd) {
+void RequestCollection::keepHandle(int clientFd, RequestInterface* currRec) {
     char* nextChunk = readNextChunk(clientFd);
-    RequestInterface* currRec = getRequest(clientFd);
     nextChunk = strcat(currRec->getBuffer(), nextChunk);
     // add check
     // fix code double
     currRec->setBuffer(nextChunk);
     int reqVal = currRec->handleRequest();
     if(reqVal == -1) {
-        m_unfinishedRequests.push_back(currRec);
+        return;
     } else {
         deleteFromCollection(clientFd);
         delete currRec;
     }
 }
 
-RequestInterface* RequestCollection::getRequest(int clientFd) {
+bool RequestCollection::getRequest(int clientFd, RequestInterface** request) {
+    *request = nullptr;
     for(size_t i = 0; i < m_unfinishedRequests.size(); ++i) {
         if(m_unfinishedRequests[i]->getClientFd() == clientFd) {
-           return m_unfinishedRequests[i];
+           *request = m_unfinishedRequests[i];
+           return true;
         }
     }
-    return nullptr;
+    return false;
 }
 
 void RequestCollection::deleteFromCollection(int clientFd) {

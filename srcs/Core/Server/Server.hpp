@@ -6,7 +6,10 @@
 class Server {
 public:
     Server();
-    ~Server() { }
+    ~Server() {
+        close(m_serverSocket);
+        close(m_epollFd);
+    }
 
     void setListenPort(uint16_t port);
     void setIpAddress(const std::string& ipAddress);
@@ -31,5 +34,5 @@ private:
     int                 m_epollFd;
     int                 m_serverSocket;
     uint16_t            m_listenPort;
-	bool                m_isRunning;
+    bool                m_isRunning;
 };

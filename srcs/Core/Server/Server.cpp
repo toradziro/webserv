@@ -1,6 +1,8 @@
 #include <Server.hpp>
 #include <Selector.hpp>
 
+extern std::sig_atomic_t gSignalStatus;
+
 Server::Server() : m_ipAddress(""), m_serverName(""), m_epollFd(-1),
     m_serverSocket(-1), m_listenPort(0), m_isRunning(false)
 {
@@ -64,6 +66,9 @@ void Server::start() {
     m_isRunning = true;
     Selector selector(m_serverSocket, m_epollFd, &m_locations);
     while(m_isRunning) {
+        if(gSignalStatus != 0) {
+            m_isRunning = false;
+        }
         selector.run();
     }
 }
