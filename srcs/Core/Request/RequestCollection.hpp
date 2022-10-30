@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common_inc.h>
+#include <RequestFabric.hpp>
 #include <Request.hpp>
 #include <Locations.hpp>
 
@@ -12,6 +13,7 @@ public:
 private:
     std::vector<RequestInterface*>  m_unfinishedRequests;
     Locations*                      m_locations;
+    RequestFabric                   m_fabric;
 
     void newConnection(int clientFd);
     void keepHandle(int clientFd, RequestInterface* currRec);

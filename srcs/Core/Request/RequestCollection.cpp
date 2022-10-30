@@ -18,7 +18,7 @@ void RequestCollection::processMessage(int clientFd) {
 
 void RequestCollection::newConnection(int clientFd) {
     char* clientMessage = readNextChunk(clientFd);
-    RequestInterface* request = requestFabric(clientMessage, m_locations, clientFd);
+    RequestInterface* request = m_fabric.create(clientMessage, m_locations, clientFd);
     int reqVal = request->handleRequest();
     if(reqVal == -1) {
         m_unfinishedRequests.push_back(request);

@@ -1,50 +1,10 @@
 #include <Request.hpp>
 #include <FileFuncs.hpp>
 
-const std::string getRequestString = "GET";
-const std::string postRequestString = "POST";
-
 const std::string page404 = "./test_files/404_not_found.html"; 
-
-static RequestType findRequestType(const char* requestBody) {
-    std::string type = "";
-    while(*requestBody != ' ') {
-        type += *requestBody;
-        ++requestBody;
-    }
-    if(type == getRequestString) {
-        return RT_GET;
-    } else if(type == postRequestString) {
-        return RT_POST;
-    }
-    return RT_UNKNOWN;
-}
 
 static bool isPackageFull() {
     return true;
-}
-
-RequestInterface* requestFabric(char* requestBody, Locations* locations, int clientFd) {
-    RequestInterface* request = nullptr;
-    switch (findRequestType(requestBody))
-    {
-    case RT_GET:
-        request = new RequestGET(locations, requestBody, clientFd);
-        break;
-    
-    case RT_POST:
-        request = new RequestPOST(locations, requestBody, clientFd);
-        break;
-
-    case RT_UNKNOWN:
-        printf("%s\n", requestBody);
-        assert(false);
-        break;
-
-    default:
-        break;
-    }
-    return request;
 }
 
 static void getLocationFromBody(char* body, std::string& requestLocation) {
@@ -104,9 +64,24 @@ static char* changePrefixWithLocation(const std::string& requestLocation, const 
     return res;
 }
 
+static std::string getContentType(std::string fileName) {
+    std::string contentType = "";
+    std::string fileExtention = getFileExtention(fileName);
+    if(fileExtention == "html") {
+        contentType = "text/html";
+    } else if(fileExtention == "bmp") {
+        contentType = "image/bmp";
+    } else if(fileExtention == "jpeg" || fileExtention == "jpg") {
+        contentType = "";
+    } else {
+        contentType = "text/plain";
+    }
+    return contentType;
+}
+
 // Interface realisations
 RequestGET::RequestGET(Locations* locations, char* requestBody, int clientFd) :
-        m_responce(nullptr),
+        m_Response(nullptr),
         m_locations(locations),
         m_requestBody(requestBody),
         m_requestLocation(nullptr),
@@ -131,58 +106,42 @@ int RequestGET::handleRequest() {
 #endif
 
     if(isPackageFull()) {
-        fillResponce();
+        fillResponse();
         return 0;
     }
     return -1;
 }
 
-void RequestGET::fillResponce() {
-    std::string responceCode = "";
+void RequestGET::fillResponse() {
+    std::string ResponseCode = "";
     std::string contentType = "";
     int fileFd = 0;
-    ResponceNum responceNum;
+    ResponseNum ResponseNum;
+
     if(isFileExists(m_requestLocation)) {
-        responceNum = RN_200;
+        ResponseNum = RN_200;
     } else {
-        responceNum = RN_404;
+        ResponseNum = RN_404;
     }
 
-    if(responceNum == RN_200) {
-        responceCode = "200 OK";
-        std::string fileExtention = getFileExtention(m_requestLocation);
-        if(fileExtention == "html") {
-            contentType = "text/html";
-        } else {
-            contentType = "text/plain";
-        }
+    if(ResponseNum == RN_200) {
+        ResponseCode = "200 OK";
+        std::cout << "REQUEST_LOCATION: " << m_requestLocation << std::endl;
+        contentType = getContentType(m_requestLocation);
         fileFd = open(m_requestLocation, O_RDONLY);
-    } else if(responceNum == RN_404) {
-        responceCode = "404 Not Found";
+    } else if(ResponseNum == RN_404) {
+        ResponseCode = "404 Not Found";
         contentType = "text/html";
         fileFd = open(page404.c_str(), O_RDONLY);
     } else {
         assert(false);
     }
 
-    checkError(fileFd == -1, "can't open file for responce");
-    int fileSize = getFileSize(fileFd);
-    char* fileMapping = (char*)mmap(NULL,
-                            fileSize,
-                            PROT_READ,
-                            MAP_PRIVATE,
-                            fileFd, 0);
-
-    checkError(fileMapping == NULL, "responce mapping failed");
-    std::string responceBody(fileMapping);
-    checkError(munmap((void*)fileMapping, fileSize) == -1, "responce unmapping failed");
-
-    m_responce = new Responce(m_clientFd,
-                    fileSize,
-                    std::move(responceCode),
+    m_Response = new Response(m_clientFd,
+                    std::move(ResponseCode),
                     std::move(contentType),
-                    std::move(responceBody));
+                    fileFd);
 
-    m_responce->sendResponce();
-    delete m_responce;
+    m_Response->sendResponse();
+    delete m_Response;
 }

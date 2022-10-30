@@ -1,6 +1,7 @@
 #include <common_inc.h>
 #include <Parser.hpp>
 #include <Server.hpp>
+#include <ServerCreator.hpp>
 
 volatile std::sig_atomic_t gSignalStatus = 0;
 
@@ -24,13 +25,18 @@ int main(int argc, char** argv) {
     std::signal(SIGQUIT, signalHandler);
 
     try {
-        Server* serv = Parser::parseConfig(argv[1]);
+        // ServerCreator is taking this info and create Server
+        Config* serverConfig = Parser::parseConfig(argv[1]);
+        ServerCreator serverCreator(serverConfig);
+        Server* server = serverCreator.create();
+        server->checkServerInstance();
+        delete serverConfig;
 #ifdef _DEBUG
         serv->printServer();
 #endif
-        serv->prepareForStart();
-        serv->start();
-        delete serv;
+        server->prepareForStart();
+        server->start();
+        delete server;
     } catch (CException* e) {
         std::cout << e->getDescription() << std::endl;
         delete e;
