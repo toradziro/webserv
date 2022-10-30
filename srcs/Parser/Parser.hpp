@@ -1,6 +1,6 @@
 #include <common_inc.h>
-#include <Server.hpp>
+#include <Config.hpp>
 
 namespace Parser {
-    Server* parseConfig(const std::string& confPath);
+    Config* parseConfig(const std::string& confPath);
 }

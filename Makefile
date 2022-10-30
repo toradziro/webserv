@@ -8,24 +8,29 @@ INC_DIRS 	=	-Iinc \
 				-I./srcs/Utils \
 				-I./srcs/Core/Request \
 				-I./srcs/Core/Server \
-				-I./srcs/Core/Responce \
+				-I./srcs/Core/Response \
 
-SRC_DIR			= ./srcs/
+SRC_DIR			=	./srcs/
 
 SRCS_NAMES		=	main.cpp \
 					Parser/Parser.cpp \
 					Parser/Lexem.cpp \
 					Parser/LexemsCollection.cpp \
+					Core/Server/ServerCreator.cpp \
 					Core/Server/Locations.cpp \
 					Core/Server/Server.cpp \
 					Core/Server/Selector.cpp \
-					Core/Responce/Responce.cpp \
+					Core/Response/Response.cpp \
 					Core/Request/Request.cpp \
 					Core/Request/RequestCollection.cpp \
+					Core/Request/RequestFabric.cpp \
 
 SRCS		= $(addprefix $(SRC_DIR), $(SRCS_NAMES))
 
-ifeq ($(MODE), Debug)
+NUM_THREADS	= $(shell nproc)
+CXXFLAGS	+= -D_NUM_THREADS=$(NUM_THREADS)
+
+ifeq ($(MODE), debug)
 	CXXFLAGS += -D_DEBUG -g -fsanitize=address
 else
 	CXXFLAGS += -O2
@@ -43,11 +48,11 @@ $(NAME): $(OBJS)
 all: $(NAME)
 
 clean:
-	rm -f $(OBJS)
-	rm -f $(DEPS)
+	@rm -f $(OBJS)
+	@rm -f $(DEPS)
 
 fclean: clean
-	rm -f $(NAME)
+	@rm -f $(NAME)
 
 re: fclean all
 

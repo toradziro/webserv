@@ -22,7 +22,6 @@ inline std::string getFileExtention(std::string str) {
     std::string delimiter = ".";
     while ((pos = str.find(delimiter)) != std::string::npos) {
         token = str.substr(0, pos);
-        std::cout << token << std::endl;
         str.erase(0, pos + delimiter.length());
     }
     return str;

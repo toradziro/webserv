@@ -84,8 +84,7 @@ static LexemsCollection makeLexems(const std::vector<token>& tokens) {
     return std::move(lexems);
 }
 
-Server* parseConfig(const std::string& confPath) {
-    Server* serv = new Server;
+Config* parseConfig(const std::string& confPath) {
     int configFileFd = open(confPath.c_str(), O_RDONLY | O_EXCL);
     
     checkError(configFileFd == -1, "wasn't able to open config file: ");
@@ -108,8 +107,7 @@ Server* parseConfig(const std::string& confPath) {
     checkError(munmap((void*)configMapping, fileSize) == -1, "config unmapping failed");
 
     LexemsCollection lexems = makeLexems(tokens);
-    lexems.addToServer(serv);
-    serv->checkServerInstance();
-    return serv;
+    Config* serverConfig = new Config(std::move(lexems));
+    return serverConfig;
 }
 }
