@@ -74,7 +74,13 @@ void LocationLexem::readEnvVar(std::string& rootPath) {
         afterEnv += rootPath[index];
     }
     char* envValue = getenv(envName.c_str());
-    rootPath = std::move(beforeEnv + std::string(envValue) + afterEnv);
+    if(envValue != NULL) {
+        rootPath = std::move(beforeEnv + std::string(envValue) + afterEnv);
+    } else {
+        // TODO: change to log!
+        std::cout << "Env value is used, but not set: " << envName << std::endl;
+        rootPath = std::move(beforeEnv + afterEnv);
+    }
 }
 
 void ListenLexem::addToServer(Server* serv) {

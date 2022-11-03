@@ -16,6 +16,8 @@ SRCS_NAMES		=	main.cpp \
 					Parser/Parser.cpp \
 					Parser/Lexem.cpp \
 					Parser/LexemsCollection.cpp \
+					Parser/ContentTypeParser.cpp \
+					Parser/ContentTypeCollection.cpp \
 					Core/Server/ServerCreator.cpp \
 					Core/Server/Locations.cpp \
 					Core/Server/Server.cpp \

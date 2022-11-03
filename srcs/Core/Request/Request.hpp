@@ -4,6 +4,7 @@
 #include <Response.hpp>
 #include <Locations.hpp>
 #include <RequestInterface.hpp>
+#include <ContentTypeCollection.hpp>
 
 #ifndef MSG_LEN
 # define MSG_LEN 8192
@@ -23,7 +24,7 @@ enum ResponseNum {
 
 class RequestGET : public RequestInterface {
 public:
-    RequestGET(Locations* locations, char* requestBody, int clientFd);
+    RequestGET(Locations* locations, ContentTypeCollection* contentType, char* requestBody, int clientFd);
     ~RequestGET() { 
         free(m_requestBody);
         if(m_requestLocation != nullptr) {
@@ -38,11 +39,12 @@ public:
 protected:
     void fillResponse();
 
-    Response*   m_Response;
-    Locations*  m_locations;
-    char*       m_requestBody;
-    char*       m_requestLocation;
-    int         m_clientFd;
+    Response*               m_Response;
+    Locations*              m_locations;
+    ContentTypeCollection*  m_contentTypes;
+    char*                   m_requestBody;
+    char*                   m_requestLocation;
+    int                     m_clientFd;
 };
 
 class RequestPOST : public RequestInterface {
