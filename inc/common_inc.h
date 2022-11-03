@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <utility>
 
 #include <iostream>
@@ -21,5 +22,6 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <ctype.h>
 
 #include <Errors.hpp>

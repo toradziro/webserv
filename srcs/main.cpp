@@ -25,14 +25,13 @@ int main(int argc, char** argv) {
     std::signal(SIGQUIT, signalHandler);
 
     try {
-        // ServerCreator is taking this info and create Server
         Config* serverConfig = Parser::parseConfig(argv[1]);
         ServerCreator serverCreator(serverConfig);
         Server* server = serverCreator.create();
         server->checkServerInstance();
         delete serverConfig;
 #ifdef _DEBUG
-        serv->printServer();
+        server->printServer();
 #endif
         server->prepareForStart();
         server->start();

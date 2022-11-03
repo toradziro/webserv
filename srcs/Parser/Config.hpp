@@ -4,6 +4,11 @@
 #include <LexemsCollection.hpp>
 
 struct Config {
-    explicit Config(LexemsCollection lexems) : m_lexems(lexems) {}
-    LexemsCollection m_lexems;
+    explicit Config(LexemsCollection* lexems,
+                    ContentTypeCollection* contentTypes) : 
+                    m_lexems(lexems),
+                    m_contentTypes(contentTypes) {}
+
+    LexemsCollection*       m_lexems;
+    ContentTypeCollection*  m_contentTypes;
 };

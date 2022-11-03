@@ -64,25 +64,11 @@ static char* changePrefixWithLocation(const std::string& requestLocation, const 
     return res;
 }
 
-static std::string getContentType(std::string fileName) {
-    std::string contentType = "";
-    std::string fileExtention = getFileExtention(fileName);
-    if(fileExtention == "html") {
-        contentType = "text/html";
-    } else if(fileExtention == "bmp") {
-        contentType = "image/bmp";
-    } else if(fileExtention == "jpeg" || fileExtention == "jpg") {
-        contentType = "";
-    } else {
-        contentType = "text/plain";
-    }
-    return contentType;
-}
-
 // Interface realisations
-RequestGET::RequestGET(Locations* locations, char* requestBody, int clientFd) :
+RequestGET::RequestGET(Locations* locations, ContentTypeCollection* contentTypes, char* requestBody, int clientFd) :
         m_Response(nullptr),
         m_locations(locations),
+        m_contentTypes(contentTypes),
         m_requestBody(requestBody),
         m_requestLocation(nullptr),
         m_clientFd(clientFd)
@@ -127,7 +113,7 @@ void RequestGET::fillResponse() {
     if(ResponseNum == RN_200) {
         ResponseCode = "200 OK";
         std::cout << "REQUEST_LOCATION: " << m_requestLocation << std::endl;
-        contentType = getContentType(m_requestLocation);
+        contentType = m_contentTypes->getContentTypeByExtention(getFileExtention(m_requestLocation));
         fileFd = open(m_requestLocation, O_RDONLY);
     } else if(ResponseNum == RN_404) {
         ResponseCode = "404 Not Found";

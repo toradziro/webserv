@@ -17,15 +17,16 @@ static RequestType findRequestType(const char* requestBody) {
     return RT_UNKNOWN;
 }
 
-RequestInterface* RequestFabric::create(char* requestBody, Locations* locations, int clientFd) {
+RequestInterface* RequestFabric::create(char* requestBody, Locations* locations,
+                            ContentTypeCollection* contentTypes, int clientFd) {
     RequestInterface* request = nullptr;
     std::cout << requestBody << std::endl;
     switch (findRequestType(requestBody))
     {
     case RT_GET:
-        request = new RequestGET(locations, requestBody, clientFd);
+        request = new RequestGET(locations, contentTypes, requestBody, clientFd);
         break;
-    
+
     case RT_POST:
         request = new RequestPOST(locations, requestBody, clientFd);
         break;

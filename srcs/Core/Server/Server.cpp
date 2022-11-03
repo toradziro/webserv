@@ -20,6 +20,10 @@ void Server::setServerName(const std::string& serverName) {
     m_serverName = std::move(serverName);
 }
 
+void Server::setContentTypeCollection(ContentTypeCollection* contentTypes) {
+    m_contentTypes = contentTypes;
+}
+
 void Server::addLocation(const std::string& locationName, const std::string& locationRoot) {
     m_locations.addLocation(locationName, locationRoot);
 }
@@ -64,7 +68,7 @@ void Server::prepareForStart() {
 
 void Server::start() {
     m_isRunning = true;
-    Selector selector(m_serverSocket, m_epollFd, &m_locations);
+    Selector selector(m_serverSocket, m_epollFd, &m_locations, m_contentTypes);
     while(m_isRunning) {
         if(gSignalStatus != 0) {
             m_isRunning = false;

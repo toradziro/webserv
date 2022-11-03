@@ -9,13 +9,17 @@
 
 class Selector {
 public:
-    explicit Selector(int serverSocket, int epollSocket, Locations* locations);
+    explicit Selector(int serverSocket, 
+                    int epollSocket,
+                    Locations* locations,
+                    ContentTypeCollection* contentTypeCollection);
     void run();
 
 private:
-    int                 m_serverSocket;
-    int                 m_epollSocket;
-    Locations*          m_locations;
-    RequestCollection   m_requests;
-    struct epoll_event  m_events[EVENTS_NUM];
+    struct epoll_event      m_events[EVENTS_NUM];
+    ContentTypeCollection*  m_contentTypes;
+    Locations*              m_locations;
+    RequestCollection       m_requests;
+    int                     m_serverSocket;
+    int                     m_epollSocket;
 };

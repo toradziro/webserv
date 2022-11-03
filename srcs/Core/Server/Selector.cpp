@@ -1,12 +1,16 @@
 #include <Selector.hpp>
 #include <Request.hpp>
 #include <RequestCollection.hpp>
+#include <ContentTypeCollection.hpp>
 
-Selector::Selector(int serverSocket, int epollSocket, Locations* locations) :
-    m_serverSocket(serverSocket), 
-    m_epollSocket(epollSocket), 
+Selector::Selector(int serverSocket, int epollSocket,
+                    Locations* locations,
+                    ContentTypeCollection* contentTypeCollection) :
+    m_contentTypes(contentTypeCollection),
     m_locations(locations), 
-    m_requests(m_locations)
+    m_requests(m_locations, m_contentTypes),
+    m_serverSocket(serverSocket),
+    m_epollSocket(epollSocket)
 {
 }
 

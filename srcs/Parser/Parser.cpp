@@ -2,6 +2,7 @@
 #include <Lexem.hpp>
 #include <LexemsCollection.hpp>
 #include <FileFuncs.hpp>
+#include <ContentTypeParser.hpp>
 
 namespace Parser {
 
@@ -69,19 +70,19 @@ static void parseServer(LexemsCollection& lexems,
     }
 }
 
-static LexemsCollection makeLexems(const std::vector<token>& tokens) {
-    LexemsCollection lexems;
+static LexemsCollection* makeLexems(const std::vector<token>& tokens) {
+    LexemsCollection* lexems = new LexemsCollection;
     for(size_t i = 0; i < tokens.size(); ++i) {
         if(tokens[i] == "server") {
             ++i;
-            parseServer(lexems, tokens, i);
+            parseServer(*lexems, tokens, i);
         } else if(tokens[i] == "}") {
             break;
         } else {
             checkError(true, "unknown config syntax: " + tokens[i]);
         }
     }
-    return std::move(lexems);
+    return lexems;
 }
 
 Config* parseConfig(const std::string& confPath) {
@@ -106,8 +107,13 @@ Config* parseConfig(const std::string& confPath) {
     // Unmup file 'cause we don't need it anymore
     checkError(munmap((void*)configMapping, fileSize) == -1, "config unmapping failed");
 
-    LexemsCollection lexems = makeLexems(tokens);
-    Config* serverConfig = new Config(std::move(lexems));
+    LexemsCollection* lexems = makeLexems(tokens);
+
+    // Let's parse content-types allowed for http
+    ContentTypeParser contentParser;
+    contentParser.ParseContentType();
+
+    Config* serverConfig = new Config(lexems, contentParser.getContentTypeCollection());
     return serverConfig;
 }
 }
