@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Lexem.hpp>
+#include <LexemInterface.hpp>
 
-class LexemsCollection : public Lexem::InterfaceLexem {
+class LexemsCollection : public InterfaceLexem {
 public:
     LexemsCollection() {}
     LexemsCollection(LexemsCollection& other) {

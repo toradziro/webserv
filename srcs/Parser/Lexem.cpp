@@ -1,26 +1,29 @@
 #include <Lexem.hpp>
-#include <Errors.hpp>
 
 #define DEFAULT_PORT 80
 
-namespace Lexem {
-
 // Fabric function
-InterfaceLexem* createLexemByToken(const token& _token) {
+InterfaceLexem* createLexemByToken(const token& _token, ConfigErrors* errors) {
     InterfaceLexem* lexem = nullptr;
     if(_token == "location") {
-        lexem = new LocationLexem();
+        lexem = new LocationLexem(errors);
     } else if(_token == "listen") {
-        lexem = new ListenLexem();
+        lexem = new ListenLexem(errors);
     } else if(_token == "server_name") {
-        lexem = new ServerNameLexem();
+        lexem = new ServerNameLexem(errors);
     }
     return lexem;
 }
 
-static void increaseIndex(size_t& currentIndex, size_t tokensSize) {
+static void increaseIndex(size_t& currentIndex, size_t tokensSize, const std::vector<token> tokens, ConfigErrors* errors) {
     ++currentIndex;
-    checkError(currentIndex == tokensSize, "unclosed location server");
+    while(tokens[currentIndex] == "\n") {
+        ++currentIndex;
+        ++confStringNum;
+    }
+    if(currentIndex == tokensSize) {
+        errors->addError("unclosed server", confStringNum);
+    }
 }
 
 void LocationLexem::addToServer(Server* serv) {
@@ -28,20 +31,24 @@ void LocationLexem::addToServer(Server* serv) {
 }
 
 void LocationLexem::parseLexem(const std::vector<token> tokens, size_t& currentIndex) {
-    increaseIndex(currentIndex, tokens.size());
+    increaseIndex(currentIndex, tokens.size(), tokens, m_errors);
     std::string locationStr = tokens[currentIndex];
     std::string rootPath;
-    increaseIndex(currentIndex, tokens.size());
+    increaseIndex(currentIndex, tokens.size(), tokens, m_errors);
     if(tokens[currentIndex] == "{") {
-        increaseIndex(currentIndex, tokens.size());
-        checkError(tokens[currentIndex] != "root", "missed root keyword in location");
-        increaseIndex(currentIndex, tokens.size());
+        increaseIndex(currentIndex, tokens.size(), tokens, m_errors);
+        if(tokens[currentIndex] != "root") {
+            m_errors->addError("missed root keyword in location", confStringNum);
+        }
+        increaseIndex(currentIndex, tokens.size(), tokens, m_errors);
         rootPath = tokens[currentIndex];
         if(checkContainEnvVar(rootPath)) {
             readEnvVar(rootPath);
         }
-        increaseIndex(currentIndex, tokens.size());
-        checkError(tokens[currentIndex] != "}", "unclosed root section");
+        increaseIndex(currentIndex, tokens.size(), tokens, m_errors);
+        if(tokens[currentIndex] != "}") {
+            m_errors->addError("unclosed root section", confStringNum);
+        }
     } else {
         rootPath = tokens[currentIndex];
     }
@@ -77,8 +84,7 @@ void LocationLexem::readEnvVar(std::string& rootPath) {
     if(envValue != NULL) {
         rootPath = std::move(beforeEnv + std::string(envValue) + afterEnv);
     } else {
-        // TODO: change to log!
-        std::cout << "Env value is used, but not set: " << envName << std::endl;
+        m_errors->addError("Env value is used, but not set: ", confStringNum);
         rootPath = std::move(beforeEnv + afterEnv);
     }
 }
@@ -89,7 +95,7 @@ void ListenLexem::addToServer(Server* serv) {
 }
 
 void ListenLexem::parseLexem(const std::vector<token> tokens, size_t& currentIndex) {
-    increaseIndex(currentIndex, tokens.size());
+    increaseIndex(currentIndex, tokens.size(), tokens, m_errors);
     size_t index = 0;
     bool needParsePort = false;
     for(; index < tokens[currentIndex].size(); ++index) {
@@ -113,7 +119,6 @@ void ServerNameLexem::addToServer(Server* serv) {
 }
 
 void ServerNameLexem::parseLexem(const std::vector<token> tokens, size_t& currentIndex) {
-    increaseIndex(currentIndex, tokens.size());
+    increaseIndex(currentIndex, tokens.size(), tokens, m_errors);
     m_serverName = std::move(tokens[currentIndex]);
 }
-} // namespace Lexem

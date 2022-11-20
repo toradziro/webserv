@@ -32,7 +32,7 @@ RequestInterface* RequestFabric::create(char* requestBody, Locations* locations,
         break;
 
     case RT_UNKNOWN:
-        printf("%s\n", requestBody);
+        printf("UNKNOWN:: %s\n", requestBody);
         assert(false);
         break;
 
