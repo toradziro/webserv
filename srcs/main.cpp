@@ -26,10 +26,12 @@ int main(int argc, char** argv) {
 
     try {
         Config* serverConfig = Parser::parseConfig(argv[1]);
+        serverConfig->validateConfig();
         ServerCreator serverCreator(serverConfig);
         Server* server = serverCreator.create();
         server->checkServerInstance();
         delete serverConfig;
+
 #ifdef _DEBUG
         server->printServer();
 #endif

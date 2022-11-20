@@ -4,7 +4,11 @@
 #include <FileFuncs.hpp>
 #include <ContentTypeParser.hpp>
 
+int confStringNum = 1;
+
 namespace Parser {
+
+#define NOT_STRING 0
 
 std::string validLabels[] {
     "server",
@@ -42,52 +46,64 @@ static std::vector<token> makeTokens(const char* readFile) {
         }
         if(addLexem == true)
             tockens.push_back(std::move(localTocken));
+        if(readFile[i] == '\n') {
+            tockens.push_back("\n");
+        }
     }
     return std::move(tockens);
 }
 
 static void parseServer(LexemsCollection& lexems,
-    const std::vector<token>& tokens, size_t& currentIndex)
+    const std::vector<token>& tokens, size_t& currentIndex, ConfigErrors* errors)
 {
     if(tokens[currentIndex] == "{") {
         ++currentIndex;
     } else {
-        checkError(true, "lost curly bracket in server declaration");
+        errors->addError("lost curly bracket in server declaration", confStringNum);
     }
     for(;currentIndex < tokens.size(); ++currentIndex) {
-        if(isValidLabel(tokens[currentIndex])) {
-            Lexem::InterfaceLexem* lexem = Lexem::createLexemByToken(tokens[currentIndex]);
+        if(tokens[currentIndex] == "\n") {
+            ++confStringNum;
+        } else if(isValidLabel(tokens[currentIndex])) {
+            InterfaceLexem* lexem = createLexemByToken(tokens[currentIndex], errors);
+            if(lexem == nullptr) {
+                return;
+            }
             lexem->parseLexem(tokens, currentIndex);
             lexems.addLexem(lexem);
         } else if(tokens[currentIndex] == "}") {
             break;
         } else {
-            checkError(true, "wrong syntax: " + tokens[currentIndex]);
+            errors->addError("unknown config syntax: " + tokens[currentIndex], confStringNum);
+            return;
         }
     }
     if(tokens[currentIndex] != "}") {
-        checkError(true, "lost curly bracket in server closing");
+        errors->addError("lost curly bracket in server declaration", confStringNum);
     }
 }
 
-static LexemsCollection* makeLexems(const std::vector<token>& tokens) {
+static LexemsCollection* makeLexems(const std::vector<token>& tokens, ConfigErrors* errors) {
     LexemsCollection* lexems = new LexemsCollection;
     for(size_t i = 0; i < tokens.size(); ++i) {
         if(tokens[i] == "server") {
             ++i;
-            parseServer(*lexems, tokens, i);
+            parseServer(*lexems, tokens, i, errors);
+        } else if(tokens[i] == "\n") {
+            ++confStringNum;
         } else if(tokens[i] == "}") {
             break;
         } else {
-            checkError(true, "unknown config syntax: " + tokens[i]);
+            errors->addError("Config error in server section, possible cause is: " + tokens[i], confStringNum);
+            return lexems;
         }
     }
     return lexems;
 }
 
 Config* parseConfig(const std::string& confPath) {
+    ConfigErrors* errors = new ConfigErrors();
     int configFileFd = open(confPath.c_str(), O_RDONLY | O_EXCL);
-    
     checkError(configFileFd == -1, "wasn't able to open config file: ");
 
     int fileSize = getFileSize(configFileFd);
@@ -102,18 +118,20 @@ Config* parseConfig(const std::string& confPath) {
 
     // Make tockens from config
     std::vector<token> tokens = makeTokens(configMapping);
-    checkError(tokens.size() == 0, "empty config");
+
+    if(tokens.size() == 0) {
+        errors->addError("empty config", NOT_STRING);
+    }
 
     // Unmup file 'cause we don't need it anymore
     checkError(munmap((void*)configMapping, fileSize) == -1, "config unmapping failed");
 
-    LexemsCollection* lexems = makeLexems(tokens);
-
+    LexemsCollection* lexems = makeLexems(tokens, errors);
     // Let's parse content-types allowed for http
     ContentTypeParser contentParser;
     contentParser.ParseContentType();
 
-    Config* serverConfig = new Config(lexems, contentParser.getContentTypeCollection());
+    Config* serverConfig = new Config(lexems, contentParser.getContentTypeCollection(), errors);
     return serverConfig;
 }
 }

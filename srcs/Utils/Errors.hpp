@@ -8,6 +8,8 @@
 // Macroces for exception generation
 #define checkError(val, descr) if((val) == true){throw newCException(_FLINE_, descr);}
 
+#define  __l()  {  fprintf( stderr,"%s:%d(%s)\n", __FILE__, __LINE__,__func__ ); fflush(stderr); }
+
 #define checkConfigError(val, fileName, line) if(val == false) \
             {throw newCException(CException::fileLine(fileName, line), "not valid syntax");}
 

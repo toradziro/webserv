@@ -1,22 +1,14 @@
 #pragma once
 
 #include <common_inc.h>
-#include <Server.hpp>
 #include <Errors.hpp>
-
-typedef std::string token;
-
-namespace Lexem {
-
-// pure virtual class a.k.a. interface for Lexems
-struct InterfaceLexem {
-    virtual void addToServer(Server* serv) = 0;
-    virtual void parseLexem(const std::vector<token> tokens, size_t& currentIndex) = 0;
-    virtual ~InterfaceLexem() { }
-};
+#include <ConfigError.hpp>
+#include <Parser.hpp>
+#include <LexemInterface.hpp>
 
 class LocationLexem : public InterfaceLexem {
 public:
+    LocationLexem(ConfigErrors* errors) : m_errors(errors) {}
     // Interface realization
     void parseLexem(const std::vector<token> tokens, size_t& currentIndex) override;
     void addToServer(Server* serv) override;
@@ -26,12 +18,15 @@ private:
     // key - label, value - rootPath
     std::pair<std::string, std::string> m_location;
 
+    ConfigErrors* m_errors;
+
     bool checkContainEnvVar(const std::string& rootPath);
     void readEnvVar(std::string& rootPath);
 };
 
 class ListenLexem : public InterfaceLexem {
 public:
+    ListenLexem(ConfigErrors* errors) : m_errors(errors) {}
     // Interface realization
     void parseLexem(const std::vector<token> tokens, size_t& currentIndex) override;
     void addToServer(Server* serv) override;
@@ -40,10 +35,13 @@ public:
 private:
     std::string m_ipAddress;
     uint16_t    m_port;
+
+    ConfigErrors* m_errors;
 };
 
 class ServerNameLexem : public InterfaceLexem {
 public:
+    ServerNameLexem(ConfigErrors* errors) : m_errors(errors) {}
     // Interface realization
     void parseLexem(const std::vector<token> tokens, size_t& currentIndex) override;
     void addToServer(Server* serv) override;
@@ -51,8 +49,8 @@ public:
 
 private:
     std::string m_serverName;
+
+    ConfigErrors* m_errors;
 };
 
-InterfaceLexem* createLexemByToken(const token& _token);
-
-} // namespace Lexem
+InterfaceLexem* createLexemByToken(const token& _token, ConfigErrors* errors);

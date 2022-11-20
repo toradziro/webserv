@@ -59,6 +59,7 @@ void Server::prepareForStart() {
     checkError(m_epollFd == -1, "couldn't create epoll instance")
 
     // Set up epoll in "Level Trigger" mode
+    // m_epollEvent.events = EPOLLIN;
     m_epollEvent.events = EPOLLIN;
     m_epollEvent.data.fd = m_serverSocket;
     checkError(epoll_ctl(m_epollFd, EPOLL_CTL_ADD, m_serverSocket, &m_epollEvent) == -1,

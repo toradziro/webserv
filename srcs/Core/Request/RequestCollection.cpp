@@ -2,6 +2,7 @@
 
 static char* readNextChunk(int clientFd) {
     char* clientMessage = (char*)calloc(MSG_LEN, sizeof(char));
+    checkError(clientMessage == NULL, "didn't allocated space for client");
     int messageLength = recv(clientFd, clientMessage, MSG_LEN, 0);
     checkError(messageLength == -1, "tried to receive msg from new client");
     return clientMessage;
@@ -18,6 +19,9 @@ void RequestCollection::processMessage(int clientFd) {
 
 void RequestCollection::newConnection(int clientFd) {
     char* clientMessage = readNextChunk(clientFd);
+    if(!clientMessage || strlen(clientMessage) == 0) {
+        return;
+    }
     RequestInterface* request = m_fabric.create(clientMessage, m_locations, m_contentTypes, clientFd);
     int reqVal = request->handleRequest();
     if(reqVal == -1) {
@@ -30,8 +34,6 @@ void RequestCollection::newConnection(int clientFd) {
 void RequestCollection::keepHandle(int clientFd, RequestInterface* currRec) {
     char* nextChunk = readNextChunk(clientFd);
     nextChunk = strcat(currRec->getBuffer(), nextChunk);
-    // add check
-    // fix code double
     currRec->setBuffer(nextChunk);
     int reqVal = currRec->handleRequest();
     if(reqVal == -1) {
