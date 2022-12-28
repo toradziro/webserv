@@ -1,13 +1,11 @@
 #include <Request.hpp>
 #include <FileFuncs.hpp>
 
-const std::string page404 = "./test_files/404_not_found.html"; 
-
 static bool isPackageFull() {
     return true;
 }
 
-static void getLocationFromBody(char* body, std::string& requestLocation) {
+static void getLocationFromBody(const char* body, std::string& requestLocation) {
     int bodySize = strlen(body);
     int i = 0;
     requestLocation = "";
@@ -73,12 +71,15 @@ RequestGET::RequestGET(Locations* locations, ContentTypeCollection* contentTypes
         m_requestLocation(nullptr),
         m_clientFd(clientFd)
 {
+    splitBody();
+    free(m_requestBody);
+    m_requestBody = nullptr;
 }
 
 int RequestGET::handleRequest() {
     std::string requestLocation = "";
     std::string locationPrefix = "";
-    getLocationFromBody(m_requestBody, requestLocation);
+    getLocationFromBody(m_splitBody[0].c_str(), requestLocation);
     getLocationPrefix(requestLocation, locationPrefix);
     if(m_locations->hasLocation(locationPrefix)) {
         std::string locationToChange = m_locations->getRoot(locationPrefix);
@@ -86,48 +87,90 @@ int RequestGET::handleRequest() {
     } else {
         m_requestLocation = strdup(requestLocation.c_str());
     }
-
+    if(strstr(m_requestLocation, "..") != NULL) {
+        deleteExtraPath();
+    }
+    // TODO: Add ".." deletion
 #ifdef _DEBUG
     std::cout << "FINAL LOCATION IS: " << m_requestLocation << std::endl;
 #endif
 
     if(isPackageFull()) {
-        fillResponse();
+        fillAndProcessResponse();
         return 0;
     }
     return -1;
 }
 
-void RequestGET::fillResponse() {
-    std::string ResponseCode = "";
-    std::string contentType = "";
-    int fileFd = 0;
-    ResponseNum ResponseNum;
+void RequestGET::fillAndProcessResponse() {
+    ResponseInfo info;
 
-    if(isFileExists(m_requestLocation)) {
-        ResponseNum = RN_200;
-    } else {
-        ResponseNum = RN_404;
-    }
+    info.m_clientFd = m_clientFd;
+    info.m_contentTypes = m_contentTypes;
+    info.m_hostPort = parseContent("Host: ");
+    // std::cout << "\n\n\nHOST PARSED IS: " << info.m_hostPort << std::endl;
+    info.m_requestLocation = m_requestLocation;
 
-    if(ResponseNum == RN_200) {
-        ResponseCode = "200 OK";
-        std::cout << "REQUEST_LOCATION: " << m_requestLocation << std::endl;
-        contentType = m_contentTypes->getContentTypeByExtention(getFileExtention(m_requestLocation));
-        fileFd = open(m_requestLocation, O_RDONLY);
-    } else if(ResponseNum == RN_404) {
-        ResponseCode = "404 Not Found";
-        contentType = "text/html";
-        fileFd = open(page404.c_str(), O_RDONLY);
-    } else {
-        assert(false);
-    }
-
-    m_Response = new Response(m_clientFd,
-                    std::move(ResponseCode),
-                    std::move(contentType),
-                    fileFd);
-
+    m_Response = createResponse(info, RESP_GET);
+    m_Response->prepareResponce();
     m_Response->sendResponse();
     delete m_Response;
+}
+
+std::string RequestGET::parseContent(std::string contetTag) {
+    std::string res = "";
+    for(size_t i = 0; i < m_splitBody.size(); ++i) {
+        if(m_splitBody[i].find(contetTag) != std::string::npos) {
+            for(size_t j = contetTag.size(); j < m_splitBody[i].size(); ++j) {
+                res += m_splitBody[i][j];
+            }
+            break;
+        }
+    }
+    std::cout << "PARSE CONTENT: " << res << std::endl;
+    return res;
+}
+
+void RequestGET::splitBody() {
+    size_t length = strlen(m_requestBody);
+    for(size_t i = 0; i < length; ++i) {
+        std::string tmp = "";
+        while(i < length && m_requestBody[i] != '\n' && m_requestBody[i] != '\r') {
+            tmp += m_requestBody[i];
+            ++i;
+        }
+        if(tmp != "") {
+            m_splitBody.push_back(tmp);
+        }
+    }
+}
+
+void RequestGET::deleteExtraPath() {
+    std::vector<std::string> tokens;
+    size_t length = strlen(m_requestLocation);
+    for(size_t i = 0; i < length; ++i) {
+        std::string tmp = "";
+        while(i < length && m_requestLocation[i] != '/') {
+            tmp += m_requestLocation[i];
+            ++i;
+        }
+        tokens.push_back(tmp);
+    }
+
+    for(size_t i = 0; i < tokens.size(); ++i) {
+        if(tokens[i] == ".." && i > 1) {
+            tokens.erase(tokens.begin() + i);
+            tokens.erase(tokens.begin() + (i - 1));
+        }
+    }
+
+    std::string tmpRes = "";
+
+    for(size_t i = 0; i < tokens.size(); ++i) {
+        tmpRes += "/";
+        tmpRes += tokens[i]; 
+    }
+
+    free(m_requestLocation);
+    m_requestLocation = strdup(tmpRes.c_str());
 }

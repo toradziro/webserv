@@ -1,7 +1,7 @@
 MODE		?=	Final
 NAME		=	webserv
 CXX			=	g++
-CXXFLAGS 	=	-std=c++11 -pthread -Wall -Wextra -Werror -MMD -fPIC
+CXXFLAGS 	=	-std=c++11 -pthread -Wall -Wextra -Werror -MMD -fPIC -fno-inline
 
 INC_DIRS 	=	-Iinc \
 				-I./srcs/Parser \
@@ -24,6 +24,7 @@ SRCS_NAMES		=	main.cpp \
 					Core/Server/Server.cpp \
 					Core/Server/Selector.cpp \
 					Core/Response/Response.cpp \
+					Core/Response/ResponseGET.cpp \
 					Core/Request/Request.cpp \
 					Core/Request/RequestCollection.cpp \
 					Core/Request/RequestFabric.cpp \
@@ -33,10 +34,11 @@ SRCS		= $(addprefix $(SRC_DIR), $(SRCS_NAMES))
 NUM_THREADS	= $(shell nproc)
 CXXFLAGS	+= -D_NUM_THREADS=$(NUM_THREADS)
 
-ifeq ($(MODE), debug)
-	CXXFLAGS += -D_DEBUG -g -fsanitize=address
+ifeq ($(MODE), Debug)
+	CXXFLAGS += -D_DEBUG -g 
+#-fsanitize=address
 else
-	CXXFLAGS += -O2
+	CXXFLAGS += -O2 -march=native
 endif
 
 OBJS	= $(SRCS:.cpp=.o)

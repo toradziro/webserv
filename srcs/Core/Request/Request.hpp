@@ -15,13 +15,6 @@ enum RequestCondition {
     RC_UNFINISHED,
 };
 
-enum ResponseNum {
-    RN_200,
-    RN_404,
-
-    RN_LENGTH,
-};
-
 class RequestGET : public RequestInterface {
 public:
     RequestGET(Locations* locations, ContentTypeCollection* contentType, char* requestBody, int clientFd);
@@ -37,14 +30,18 @@ public:
     void setBuffer(char* newBuff) { m_requestBody = newBuff; }
 
 protected:
-    void fillResponse();
+    void fillAndProcessResponse();
+    std::string parseContent(std::string contetTag);
+    void splitBody();
+    void deleteExtraPath();
 
-    Response*               m_Response;
-    Locations*              m_locations;
-    ContentTypeCollection*  m_contentTypes;
-    char*                   m_requestBody;
-    char*                   m_requestLocation;
-    int                     m_clientFd;
+    std::vector<std::string>    m_splitBody;
+    ResponseInterface*          m_Response;
+    Locations*                  m_locations;
+    ContentTypeCollection*      m_contentTypes;
+    char*                       m_requestBody;
+    char*                       m_requestLocation;
+    int                         m_clientFd;
 };
 
 class RequestPOST : public RequestInterface {
@@ -62,10 +59,10 @@ public:
     void setBuffer(char* /*newBuff*/) { assert(false); }
 
 protected:
-    void fillResponse() { assert(false); }
+    void fillAndProcessResponse() { assert(false); }
 
-    Response*   m_Response;
-    Locations*  m_locations;
-    char*       m_requestBody;
-    int         m_clientFd;
+    ResponseInterface*  m_Response;
+    Locations*          m_locations;
+    char*               m_requestBody;
+    int                 m_clientFd;
 };

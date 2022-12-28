@@ -16,5 +16,5 @@ struct RequestInterface {
     virtual void setBuffer(char* newBuff) = 0;
 
 protected:
-    virtual void fillResponse() = 0;
+    virtual void fillAndProcessResponse() = 0;
 };
