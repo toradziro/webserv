@@ -28,14 +28,14 @@ struct Config {
     void validateConfig() {
         if(hasError()) {
             m_errors->printErrors();
+            delete m_lexems;
+            m_lexems = nullptr;
+            delete m_contentTypes;
+            m_contentTypes = nullptr;
+            delete m_errors;
+            m_errors = nullptr;
+            exit(EXIT_FAILURE);
         }
-        delete m_lexems;
-        m_lexems = nullptr;
-        delete m_contentTypes;
-        m_contentTypes = nullptr;
-        delete m_errors;
-        m_errors = nullptr;
-        exit(EXIT_FAILURE);
     }
 
     LexemsCollection*       m_lexems;
