@@ -20,9 +20,6 @@ public:
     RequestGET(Locations* locations, ContentTypeCollection* contentType, char* requestBody, int clientFd);
     ~RequestGET() { 
         free(m_requestBody);
-        if(m_requestLocation != nullptr) {
-            free(m_requestLocation);
-        }
     }
     int handleRequest();
     int getClientFd() { return m_clientFd; }

@@ -125,6 +125,7 @@ Config* parseConfig(const std::string& confPath) {
 
     // Unmup file 'cause we don't need it anymore
     checkError(munmap((void*)configMapping, fileSize) == -1, "config unmapping failed");
+    checkError(close(configFileFd) == -1, "config unmapping failed");
 
     LexemsCollection* lexems = makeLexems(tokens, errors);
     // Let's parse content-types allowed for http
