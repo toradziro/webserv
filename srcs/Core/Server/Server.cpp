@@ -70,11 +70,23 @@ void Server::prepareForStart() {
 void Server::start() {
     m_isRunning = true;
     Selector selector(m_serverSocket, m_epollFd, &m_locations, m_contentTypes);
+#ifdef _MEMORY_PROFILE
+    int iterationCount = 0;
+#endif
     while(m_isRunning) {
         if(gSignalStatus != 0) {
             m_isRunning = false;
         }
         selector.run();
+#ifdef _MEMORY_PROFILE
+#ifndef _CICLE_COUNT
+#define _CICLE_COUNT 4
+#endif // _CICLE_COUNT
+        if(iterationCount == _CICLE_COUNT) {
+            break;
+        }
+        ++iterationCount;
+#endif // _MEMORY_PROFILE
     }
 }
 

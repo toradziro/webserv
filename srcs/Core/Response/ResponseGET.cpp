@@ -34,8 +34,7 @@ void ResponseGET::prepareResponce() {
     }
     m_fileFd = open(m_requestLocation, O_RDONLY);
     checkError(m_fileFd == -1, "can't open file");
-    m_fileType = fileType(m_fileFd);
-    switch(m_fileType)
+    switch(fileType(m_fileFd))
     {
     case FT_FILE:
     // regular send by chanks
@@ -72,6 +71,10 @@ void ResponseGET::sendResponse() {
         unlink(m_tmpFilePath);
         free(m_tmpFilePath);
         m_tmpFilePath = nullptr;
+    }
+    if(m_requestLocation != nullptr) {
+        free(m_requestLocation);
+        m_requestLocation = nullptr;
     }
     std::cout << "succesfully sent data\n" << std::endl;
 }
