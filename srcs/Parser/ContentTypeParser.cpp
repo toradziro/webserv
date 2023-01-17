@@ -2,7 +2,6 @@
 #include <Errors.hpp>
 
 const char* contentTypesConfig = "./available_data_types/content_types.conf";
-size_t stringLength = 500;
 
 ContentTypeParser::ContentTypeParser() {
     m_typesCollection = new ContentTypeCollection();
@@ -34,15 +33,17 @@ static void skipWhiteSpaces(char* line, size_t& index) {
 void ContentTypeParser::ParseContentType() {
     FILE* file = fopen(contentTypesConfig, "r");
     checkError(file == NULL, "can't open content-types config");
-    char* line = (char*)calloc(stringLength, sizeof(char));
-    checkError(line == NULL, "calloc error");
-    while(getline(&line, &stringLength, file) != EOF) {
+    char* line = NULL;
+    while(getline(&line, 0, file) != EOF) {
         size_t index = 0;
         std::string contentType = getWord(line, index);
         skipWhiteSpaces(line, index);
         std::string extention = getWord(line, index);
-        memset(line, 0, stringLength);
+        memset(line, 0, strlen(line));
         m_typesCollection->addType(extention, contentType);
+        free(line);
+        line = NULL;
     }
     free(line);
+    fclose(file);
 }

@@ -10,6 +10,7 @@ public:
     ~Server() {
         close(m_serverSocket);
         close(m_epollFd);
+        delete m_contentTypes;
     }
 
     void setListenPort(uint16_t port);

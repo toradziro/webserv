@@ -1,7 +1,7 @@
 MODE		?=	Final
 NAME		=	webserv
 CXX			=	g++
-CXXFLAGS 	=	-std=c++11 -pthread -Wall -Wextra -Werror -MMD -fPIC -fno-inline
+CXXFLAGS 	=	-std=c++11 -pthread -Wall -Wextra -Werror -MMD -fPIC
 
 INC_DIRS 	=	-Iinc \
 				-I./srcs/Parser \
@@ -66,6 +66,10 @@ clean:
 
 fclean: clean
 	@rm -f $(NAME)
+	@rm -f server.log
+	@rm -f valgrind.log
+	@rm -f speed_test.log
+	@rm -f utilites/autotest/autotest
 
 re: fclean all
 
