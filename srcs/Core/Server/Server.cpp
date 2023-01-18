@@ -51,7 +51,7 @@ void Server::prepareForStart() {
     // Set socket to listen
     checkError(listen(m_serverSocket, SOMAXCONN) == -1,
         "server doesn't want to listen, hard to jugje we all know what asshole written him");
-    checkError(fcntl(m_serverSocket, F_SETFL, O_NONBLOCK) == -1, 
+    checkError(fcntl(m_serverSocket, F_SETFL, O_NONBLOCK) == -1,
         "server wants to work only in blocking mode");
 
     // Creating event selector

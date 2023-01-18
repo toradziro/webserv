@@ -38,7 +38,7 @@ func readTestsData(pathToYaml string, testsTable *TableTestData) {
 }
 
 // ping() returns true in case if server have returned 200 OK on ping
-func ping(ctx context.Context) bool {
+func ping(ctx context.Context, hostname string) bool {
 	for {
 		select {
 		case <-ctx.Done():
@@ -46,28 +46,23 @@ func ping(ctx context.Context) bool {
 			return false
 		default:
 			fmt.Printf("Health check\n")
-			resp, err := http.Get("http://127.0.0.1:8080/ping")
+			resp, err := http.Get(hostname + "/ping")
 			if(err != nil) {
 				time.Sleep(time.Second)
 				continue
 			} else {
 				fmt.Printf("Ping server returned %s\n", resp.Status)
-				if(resp.Status == "200 OK") {
-					return true
-				} else {
-					return false
-				}
+				return resp.Status == "200 OK"
 			}
 		}
 	}
 }
 
-func fullTestCicle(testTable* TableTestData) {
-	host := "http://127.0.0.1:8080"
+func fullTestCicle(testTable* TableTestData, hostname string) {
 	for _, test := range testTable.Testcases {
 		fmt.Printf("%v\n", test)
 		if(test.RequestType == "GET") {
-			fullGetLocation := host + test.Location
+			fullGetLocation := hostname + test.Location
 			resp, err := http.Get(fullGetLocation)
 			checkError(err)
 			if(resp.Status != test.ExpectedCode) {
@@ -82,6 +77,17 @@ func fullTestCicle(testTable* TableTestData) {
 	}
 }
 
+func speedTestScenario(testTable* TableTestData, hostname string) {
+	// We need something about 10k request to check the answer speed
+	numIteration := 10000 / len(testTable.Testcases)
+	start := time.Now()
+	for i := 0; i < numIteration; i++ {
+		fullTestCicle(testTable, hostname)
+	}
+	timeElapsed := time.Since(start)
+	fmt.Printf("Total execution time:\n %s\n", timeElapsed)
+}
+
 func main() {
 	servRoot, isFoundRoot := syscall.Getenv("WEBSERV_ROOT")
 	if(isFoundRoot != true) {
@@ -90,14 +96,20 @@ func main() {
 	}
 	var pathToYaml = servRoot + "/utilites/autotest/test_info.yaml"
 	var testTable TableTestData
+	hostname := "http://127.0.0.1:8080"
 	readTestsData(pathToYaml, &testTable)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 15)
 	defer cancel()
-	pingStatus := ping(ctx)
+	pingStatus := ping(ctx, hostname)
 	if(pingStatus == false) {
 		fmt.Println("ping shutdown, check if server startarted correctly")
 	} else {
 		fmt.Println("ping worked ok, starting test cicle")
 	}
-	fullTestCicle(&testTable)
+	_, isSpeedTestScenario := syscall.Getenv("WEBSERV_SPEED")
+	if(isSpeedTestScenario) {
+		speedTestScenario(&testTable, hostname)
+	} else {
+		fullTestCicle(&testTable, hostname)
+	}
 }

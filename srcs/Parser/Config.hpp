@@ -16,6 +16,7 @@ struct Config {
         if(m_errors != nullptr) {
             delete m_errors;
         }
+        delete m_lexems;
     }
 
     bool hasError() {

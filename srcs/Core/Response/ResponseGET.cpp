@@ -77,6 +77,7 @@ void ResponseGET::sendResponse() {
         m_requestLocation = nullptr;
     }
     std::cout << "succesfully sent data\n" << std::endl;
+    close(m_clientFd);
 }
 
 // Private Part

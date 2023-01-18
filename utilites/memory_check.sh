@@ -16,4 +16,6 @@ make re MODE=MemoryCheck CYCLE_COUNT=$CYCLE_COUNT
 cd "$WEBSERV_ROOT/utilites/autotest"
 go build -o autotest autotest.go > /dev/null
 ./autotest&
-valgrind --leak-check=full --log-file="valgrind.log" -v "$WEBSERV_ROOT/webserv $WEBSERV_ROOT/config/test_config.conf"
+# has to start server root directory, otherwise some of config won't be found 
+cd $WEBSERV_ROOT
+valgrind --leak-check=full --show-leak-kinds=all --log-file="valgrind.log" -v "$WEBSERV_ROOT/webserv" "$WEBSERV_ROOT/config/test_config.conf"
