@@ -9,10 +9,10 @@
 class LocationLexem : public InterfaceLexem {
 public:
     LocationLexem(ConfigErrors* errors) : m_errors(errors) {}
+    ~LocationLexem() {}
     // Interface realization
     void parseLexem(const std::vector<token> tokens, size_t& currentIndex) override;
     void addToServer(Server* serv) override;
-    ~LocationLexem() {}
 
 private:
     // key - label, value - rootPath
@@ -27,10 +27,10 @@ private:
 class ListenLexem : public InterfaceLexem {
 public:
     ListenLexem(ConfigErrors* errors) : m_errors(errors) {}
+    ~ListenLexem() {}
     // Interface realization
     void parseLexem(const std::vector<token> tokens, size_t& currentIndex) override;
     void addToServer(Server* serv) override;
-    ~ListenLexem() {}
 
 private:
     std::string m_ipAddress;
@@ -42,13 +42,27 @@ private:
 class ServerNameLexem : public InterfaceLexem {
 public:
     ServerNameLexem(ConfigErrors* errors) : m_errors(errors) {}
+    ~ServerNameLexem() {}
     // Interface realization
     void parseLexem(const std::vector<token> tokens, size_t& currentIndex) override;
     void addToServer(Server* serv) override;
-    ~ServerNameLexem() {}
 
 private:
     std::string m_serverName;
+
+    ConfigErrors* m_errors;
+};
+
+class ServerRootLexem : public InterfaceLexem {
+public:
+    ServerRootLexem(ConfigErrors* errors) : m_errors(errors) {}
+    ~ServerRootLexem() {}
+    // Interface realization
+    void parseLexem(const std::vector<token> tokens, size_t& currentIndex) override;
+    void addToServer(Server* serv) override;
+
+private:
+    std::string m_parsedPath;
 
     ConfigErrors* m_errors;
 };

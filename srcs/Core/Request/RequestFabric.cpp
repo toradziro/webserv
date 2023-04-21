@@ -18,13 +18,15 @@ static RequestType findRequestType(const char* requestBody) {
 }
 
 RequestInterface* RequestFabric::create(char* requestBody, Locations* locations,
-                            ContentTypeCollection* contentTypes, int clientFd) {
+                            ContentTypeCollection* contentTypes, int clientFd,
+                            const std::string& serverRoot)
+{
     RequestInterface* request = nullptr;
     std::cout << requestBody << std::endl;
     switch (findRequestType(requestBody))
     {
     case RT_GET:
-        request = new RequestGET(locations, contentTypes, requestBody, clientFd);
+        request = new RequestGET(locations, contentTypes, requestBody, clientFd, serverRoot);
         break;
 
     case RT_POST:
@@ -33,6 +35,7 @@ RequestInterface* RequestFabric::create(char* requestBody, Locations* locations,
 
     case RT_UNKNOWN:
         printf("UNKNOWN:: %s\n", requestBody);
+        // TODO: change to responce "unknown request"
         assert(false);
         break;
 

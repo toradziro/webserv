@@ -8,12 +8,13 @@
 
 class RequestCollection {
 public:
-    RequestCollection(Locations* locations, ContentTypeCollection* contentTypes) : 
-                    m_locations(locations), m_contentTypes(contentTypes) { }
+    RequestCollection(Locations* locations, ContentTypeCollection* contentTypes, const std::string& serverRoot) : 
+                    m_serverRoot(serverRoot), m_locations(locations), m_contentTypes(contentTypes) { }
     void processMessage(int clientFd);
 
 private:
     std::vector<RequestInterface*>  m_unfinishedRequests;
+    std::string                     m_serverRoot;
     Locations*                      m_locations;
     ContentTypeCollection*          m_contentTypes;
     RequestFabric                   m_fabric;

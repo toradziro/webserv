@@ -23,10 +23,10 @@ SRCS_NAMES		=	main.cpp \
 					Core/Server/Locations.cpp \
 					Core/Server/Server.cpp \
 					Core/Server/Selector.cpp \
+					Core/Request/RequestCollection.cpp \
 					Core/Response/Response.cpp \
 					Core/Response/ResponseGET.cpp \
 					Core/Request/Request.cpp \
-					Core/Request/RequestCollection.cpp \
 					Core/Request/RequestFabric.cpp \
 
 SRCS		= $(addprefix $(SRC_DIR), $(SRCS_NAMES))

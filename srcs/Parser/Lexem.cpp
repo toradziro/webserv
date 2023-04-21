@@ -1,4 +1,5 @@
 #include <Lexem.hpp>
+#include <FileFuncs.hpp>
 
 #define DEFAULT_PORT 80
 
@@ -11,6 +12,8 @@ InterfaceLexem* createLexemByToken(const token& _token, ConfigErrors* errors) {
         lexem = new ListenLexem(errors);
     } else if(_token == "server_name") {
         lexem = new ServerNameLexem(errors);
+    } else if(_token == "server_root") {
+        lexem = new ServerRootLexem(errors);
     }
     return lexem;
 }
@@ -121,4 +124,25 @@ void ServerNameLexem::addToServer(Server* serv) {
 void ServerNameLexem::parseLexem(const std::vector<token> tokens, size_t& currentIndex) {
     increaseIndex(currentIndex, tokens.size(), tokens, m_errors);
     m_serverName = std::move(tokens[currentIndex]);
+}
+
+void ServerRootLexem::parseLexem(const std::vector<token> tokens, size_t& currentIndex) {
+    increaseIndex(currentIndex, tokens.size(), tokens, m_errors);
+    int index = 0;
+    int length = tokens[currentIndex].size();
+    if(tokens[currentIndex][0] == '"') {
+        ++index;
+        --length;
+    }
+    while(index < length) {
+        m_parsedPath += tokens[currentIndex][index];
+        ++index;
+    }
+    if(m_parsedPath == "") {
+        m_parsedPath = GetCurrentDirectory();
+    }
+}
+
+void ServerRootLexem::addToServer(Server* serv) {
+    serv->setServerRoot(m_parsedPath);
 }
