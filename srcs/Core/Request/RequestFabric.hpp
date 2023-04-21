@@ -9,6 +9,7 @@ public:
     RequestFabric() {}
 
     RequestInterface* create(char* requestBody, Locations* locations,
-                            ContentTypeCollection* contentTypes, int clientFd);
+                            ContentTypeCollection* contentTypes, int clientFd,
+                            const std::string& serverRoot);
 private:
 };

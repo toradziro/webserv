@@ -17,7 +17,8 @@ enum RequestCondition {
 
 class RequestGET : public RequestInterface {
 public:
-    RequestGET(Locations* locations, ContentTypeCollection* contentType, char* requestBody, int clientFd);
+    RequestGET(Locations* locations, ContentTypeCollection* contentType, char* requestBody,
+                int clientFd, const std::string& requestServer);
     ~RequestGET() { 
         free(m_requestBody);
     }
@@ -33,6 +34,7 @@ protected:
     void deleteExtraPath();
 
     std::vector<std::string>    m_splitBody;
+    std::string                 m_serverRoot;
     ResponseInterface*          m_Response;
     Locations*                  m_locations;
     ContentTypeCollection*      m_contentTypes;

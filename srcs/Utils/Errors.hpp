@@ -3,10 +3,7 @@
 #include <common_inc.h>
 
 // made by tutorial http://ders.stml.net/cpp/intmsg/intmsg.html
-
 #define _FLINE_ CException::fileLine(__FILE__, __LINE__)
-// Macroces for exception generation
-#define checkError(val, descr) if((val) == true){throw newCException(_FLINE_, descr);}
 
 #define  __l()  {  fprintf( stderr,"%s:%d(%s)\n", __FILE__, __LINE__,__func__ ); fflush(stderr); }
 
@@ -37,3 +34,9 @@ private:
     std::string description;
     fileLine    location;
 };
+
+inline void checkError(bool value, const std::string& description) {
+    if(value == true) {
+        throw newCException(_FLINE_, description);
+    }
+}

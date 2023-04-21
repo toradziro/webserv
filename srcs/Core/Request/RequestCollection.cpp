@@ -25,7 +25,7 @@ void RequestCollection::newConnection(int clientFd) {
     if(clientMessage == nullptr || strlen(clientMessage) == 0) {
         return;
     }
-    RequestInterface* request = m_fabric.create(clientMessage, m_locations, m_contentTypes, clientFd);
+    RequestInterface* request = m_fabric.create(clientMessage, m_locations, m_contentTypes, clientFd, m_serverRoot);
     int reqVal = request->handleRequest();
     if(reqVal == -1) {
         m_unfinishedRequests.push_back(request);

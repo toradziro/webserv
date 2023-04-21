@@ -30,6 +30,7 @@ struct ResponseInfo {
     // will set NULL in case of request POST or PUT
     ContentTypeCollection*  m_contentTypes;
     std::string             m_hostPort;
+    std::string             m_serverRoot;
     char*                   m_requestLocation = NULL;
     int                     m_clientFd = -1;
 };

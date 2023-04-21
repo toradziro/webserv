@@ -24,6 +24,10 @@ void Server::setContentTypeCollection(ContentTypeCollection* contentTypes) {
     m_contentTypes = contentTypes;
 }
 
+void Server::setServerRoot(const std::string& serverRoot) {
+    m_serverRoot = serverRoot;
+}
+
 void Server::addLocation(const std::string& locationName, const std::string& locationRoot) {
     m_locations.addLocation(locationName, locationRoot);
 }
@@ -56,7 +60,7 @@ void Server::prepareForStart() {
 
     // Creating event selector
     m_epollFd = epoll_create(EVENTS_NUM);
-    checkError(m_epollFd == -1, "couldn't create epoll instance")
+    checkError(m_epollFd == -1, "couldn't create epoll instance");
 
     // Set up epoll in "Level Trigger" mode
     // m_epollEvent.events = EPOLLIN;
@@ -64,12 +68,15 @@ void Server::prepareForStart() {
     m_epollEvent.data.fd = m_serverSocket;
     checkError(epoll_ctl(m_epollFd, EPOLL_CTL_ADD, m_serverSocket, &m_epollEvent) == -1,
         "epoll_ctl didn't work");
+    if(m_serverRoot == "") {
+        m_serverRoot = GetCurrentDirectory();
+    }
     std::cout << "Succesfully prepared server" << std::endl;
 }
 
 void Server::start() {
     m_isRunning = true;
-    Selector selector(m_serverSocket, m_epollFd, &m_locations, m_contentTypes);
+    Selector selector(m_serverSocket, m_epollFd, &m_locations, m_contentTypes, m_serverRoot);
 #ifdef _MEMORY_PROFILE
     int iterationCount = 0;
 #endif

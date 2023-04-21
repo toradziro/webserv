@@ -5,7 +5,7 @@
 #include <FileFuncs.hpp>
 #include <ContentTypeCollection.hpp>
 
-#define BUFF_SIZE 4096
+const int bufferSize = 4096;
 
 class ResponseGET : public ResponseInterface {
 public:
@@ -17,6 +17,7 @@ public:
 private:
     std::string             m_contentType;
     std::string             m_hostPort;
+    std::string             m_serverRoot;
     ContentTypeCollection*  m_contentTypes;
     ResponseCode            m_responseCode;
     FileType                m_fileType;
@@ -25,7 +26,7 @@ private:
     int                     m_clientFd;
     int                     m_bodySize;
     int                     m_fileFd;
-    char                    m_buffer[BUFF_SIZE];
+    char                    m_buffer[bufferSize];
 
     void fillIndex();
     void fillRegularFileInfo();

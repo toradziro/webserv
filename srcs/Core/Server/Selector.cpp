@@ -37,10 +37,12 @@ static void debug_epoll_event(epoll_event ev){
 
 Selector::Selector(int serverSocket, int epollSocket,
                     Locations* locations,
-                    ContentTypeCollection* contentTypeCollection) :
+                    ContentTypeCollection* contentTypeCollection,
+                    const std::string& serverRoot) :
+    m_serverRoot(serverRoot),
     m_contentTypes(contentTypeCollection),
     m_locations(locations), 
-    m_requests(m_locations, m_contentTypes),
+    m_requests(m_locations, m_contentTypes, m_serverRoot),
     m_serverSocket(serverSocket),
     m_epollSocket(epollSocket)
 {

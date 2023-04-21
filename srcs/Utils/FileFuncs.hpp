@@ -10,6 +10,8 @@ enum FileType {
     FT_NONE
 };
 
+const int dirNameLength = 500;
+
 inline int getFileSize(int fd) {
     struct stat info;
 
@@ -53,7 +55,7 @@ inline FileType fileType(int fd) {
 inline bool dirContainsFile(std::string dirName, std::string fileName) {
     DIR* dirPointer = opendir(dirName.c_str());
     // TODO: LOOOOOOG NOT ASSERT
-    checkError(dirPointer == nullptr, "dir can't be opened")
+    checkError(dirPointer == nullptr, "dir can't be opened");
     struct dirent* dirInfo = nullptr;
     while((dirInfo = readdir(dirPointer)) != NULL) {
         if(dirInfo->d_name == fileName) {
@@ -68,7 +70,7 @@ inline std::vector<std::string> listDirContent(std::string dirName) {
     std::vector<std::string> res;
     DIR* dirPointer = opendir(dirName.c_str());
     // TODO: LOOOOOOG NOT ASSERT
-    checkError(dirPointer == nullptr, "dir can't be opened")
+    checkError(dirPointer == nullptr, "dir can't be opened");
     struct dirent* dirInfo = nullptr;
     while((dirInfo = readdir(dirPointer)) != NULL) {
         std::string dirName(dirInfo->d_name);
@@ -76,4 +78,22 @@ inline std::vector<std::string> listDirContent(std::string dirName) {
     }
     closedir(dirPointer);
     return res;
+}
+
+inline std::string GetCurrentDirectory() {
+    char* directoryName = (char*)calloc(dirNameLength, sizeof(char));
+    checkError(directoryName == NULL, "memory allocation error");
+    directoryName = getcwd(directoryName, dirNameLength);
+    if(directoryName == NULL) {
+        if(errno == ERANGE) {
+            free(directoryName);
+            directoryName = (char*)calloc(dirNameLength * 1.5, sizeof(char));
+            directoryName = getcwd(directoryName, dirNameLength);
+            checkError(directoryName == NULL, "getcwd error");
+        }
+    }
+    std::string currentDirectory(directoryName);
+    std::cout << "DIRECTORY NAME:" << directoryName << std::endl;
+    free(directoryName);
+    return currentDirectory;
 }

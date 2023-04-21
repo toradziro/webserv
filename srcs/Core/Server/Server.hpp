@@ -17,6 +17,7 @@ public:
     void setIpAddress(const std::string& ipAddress);
     void setServerName(const std::string& serverName);
     void setContentTypeCollection(ContentTypeCollection*  contentTypes);
+    void setServerRoot(const std::string& serverRoot);
     void addLocation(const std::string& locationName, const std::string& locationRoot);
     void checkServerInstance();
     void prepareForStart();
@@ -35,6 +36,7 @@ private:
     struct epoll_event      m_epollEvent;
     std::string             m_ipAddress;
     std::string             m_serverName;
+    std::string             m_serverRoot;
     int                     m_epollFd;
     int                     m_serverSocket;
     uint16_t                m_listenPort;

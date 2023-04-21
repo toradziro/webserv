@@ -10,17 +10,19 @@ namespace Parser {
 
 #define NOT_STRING 0
 
-std::string validLabels[] {
+const std::vector<std::string> validLabels {
     "server",
     "listen",
     "location",
     "root",
     "server_name",
-    "worker_threads"
+    "worker_threads",
+    "server_root",
+    "request_allowed"
 };
 
 static bool isValidLabel(const token& _token) {
-    for(size_t i = 0; i < validLabels->size(); ++i) {
+    for(size_t i = 0; i < validLabels.size(); ++i) {
         if(_token == validLabels[i]) {
             return true;
         }
@@ -35,6 +37,11 @@ static std::vector<token> makeTokens(const char* readFile) {
     for(size_t i = 0; i < len; ++i) {
         token localTocken = "";
         bool addLexem = false;
+        if(readFile[i] == '#') {
+            while(i < len && readFile[i] != '\n') {
+                ++i;
+            }
+        }
         while(i < len &&
             readFile[i] != ' ' &&
             readFile[i] != '\t' &&

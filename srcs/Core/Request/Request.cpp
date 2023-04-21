@@ -63,7 +63,9 @@ static char* changePrefixWithLocation(const std::string& requestLocation, const 
 }
 
 // Interface realisations
-RequestGET::RequestGET(Locations* locations, ContentTypeCollection* contentTypes, char* requestBody, int clientFd) :
+RequestGET::RequestGET(Locations* locations, ContentTypeCollection* contentTypes, char* requestBody, 
+                    int clientFd, const std::string& serverRoot) :
+        m_serverRoot(serverRoot),
         m_Response(nullptr),
         m_locations(locations),
         m_contentTypes(contentTypes),
@@ -108,8 +110,8 @@ void RequestGET::fillAndProcessResponse() {
     info.m_clientFd = m_clientFd;
     info.m_contentTypes = m_contentTypes;
     info.m_hostPort = parseContent("Host: ");
-    // std::cout << "\n\n\nHOST PARSED IS: " << info.m_hostPort << std::endl;
     info.m_requestLocation = m_requestLocation;
+    info.m_serverRoot = m_serverRoot;
 
     m_Response = createResponse(info, RESP_GET);
     m_Response->prepareResponce();
