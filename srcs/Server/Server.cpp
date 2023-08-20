@@ -1,5 +1,6 @@
 #include <Server.hpp>
 #include <Selector.hpp>
+#include <FileFuncs.hpp>
 
 extern std::sig_atomic_t gSignalStatus;
 
@@ -40,6 +41,8 @@ void Server::checkServerInstance() {
 void Server::prepareForStart() {
     // Create socket
     m_serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    const int enable = 1;
+    checkError(setsockopt(m_serverSocket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) == -1, "error setting reuse address");
     checkError(m_serverSocket == -1, "server socket creation");
 
     // Set the socket up
@@ -86,9 +89,9 @@ void Server::start() {
         }
         selector.run();
 #ifdef _MEMORY_PROFILE
-#ifndef _CICLE_COUNT
-#define _CICLE_COUNT 4
-#endif // _CICLE_COUNT
+# ifndef _CICLE_COUNT
+# define _CICLE_COUNT 4
+# endif // _CICLE_COUNT
         if(iterationCount == _CICLE_COUNT) {
             break;
         }

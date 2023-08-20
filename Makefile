@@ -6,9 +6,8 @@ CXXFLAGS 	=	-std=c++11 -pthread -Wall -Wextra -Werror -MMD -fPIC
 INC_DIRS 	=	-Iinc \
 				-I./srcs/Parser \
 				-I./srcs/Utils \
-				-I./srcs/Core/Request \
-				-I./srcs/Core/Server \
-				-I./srcs/Core/Response \
+				-I./srcs/Server \
+				-I./srcs/Server/RequestProcessor \
 
 SRC_DIR			=	./srcs/
 
@@ -19,15 +18,11 @@ SRCS_NAMES		=	main.cpp \
 					Parser/ContentTypeParser.cpp \
 					Parser/ContentTypeCollection.cpp \
 					Parser/ConfigError.cpp \
-					Core/Server/ServerCreator.cpp \
-					Core/Server/Locations.cpp \
-					Core/Server/Server.cpp \
-					Core/Server/Selector.cpp \
-					Core/Request/RequestCollection.cpp \
-					Core/Response/Response.cpp \
-					Core/Response/ResponseGET.cpp \
-					Core/Request/Request.cpp \
-					Core/Request/RequestFabric.cpp \
+					Server/RequestProcessor/ClientHandler.cpp \
+					Server/ServerCreator.cpp \
+					Server/Locations.cpp \
+					Server/Server.cpp \
+					Server/Selector.cpp \
 
 SRCS		= $(addprefix $(SRC_DIR), $(SRCS_NAMES))
 
