@@ -1,7 +1,6 @@
 #include <Selector.hpp>
-#include <Request.hpp>
-#include <RequestCollection.hpp>
 #include <ContentTypeCollection.hpp>
+#include <ClientHandler.hpp>
 
 static void debug_epoll_event(epoll_event ev){
        printf("fd(%d), ev.events:", ev.data.fd);
@@ -42,7 +41,6 @@ Selector::Selector(int serverSocket, int epollSocket,
     m_serverRoot(serverRoot),
     m_contentTypes(contentTypeCollection),
     m_locations(locations), 
-    m_requests(m_locations, m_contentTypes, m_serverRoot),
     m_serverSocket(serverSocket),
     m_epollSocket(epollSocket)
 {
@@ -71,7 +69,8 @@ void Selector::run()
                 "addidng client to epoll");
         } else {
             // msg from previosly traced connection
-            m_requests.processMessage(m_events[i].data.fd);
+            ClientHandler clientHandler(m_serverRoot, m_locations, m_contentTypes,m_events[i].data.fd);
+            clientHandler.HandleRequest();
         }
     }
 }

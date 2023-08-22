@@ -57,7 +57,7 @@ static std::vector<token> makeTokens(const char* readFile) {
             tockens.push_back("\n");
         }
     }
-    return std::move(tockens);
+    return tockens;
 }
 
 static void parseServer(LexemsCollection& lexems,
