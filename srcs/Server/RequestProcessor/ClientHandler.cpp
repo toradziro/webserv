@@ -19,10 +19,12 @@ Content-Length: 27
 field1=value1&field2=value2
 */
 
-ClientHandler::ClientHandler(std::string serverRoot, Locations* locations, int clientFd) :
-                            m_serverRoot(serverRoot),
-                            m_locations(locations),
-                            m_clientFd(clientFd)
+ClientHandler::ClientHandler(const std::string& serverRoot, Locations* locations, 
+                ContentTypeCollection* contentTypes, int clientFd) :
+                m_serverRoot(serverRoot),
+                m_contentTypes(contentTypes),
+                m_locations(locations),
+                m_clientFd(clientFd)
 { }
 
 void ClientHandler::HandleRequest() {
@@ -31,6 +33,7 @@ void ClientHandler::HandleRequest() {
     std::shared_ptr<RequestHandler> requestHandler = createRequestHandler(std::move(requestConfig));
     requestHandler->prepareResponce();
     requestHandler->sendResponse();
+    
 #ifdef _DEBUG
     std::cout << "------location: " << requestConfig.m_location << std::endl;
     std::cout << "------body: " << requestConfig.m_body << std::endl;
@@ -102,24 +105,52 @@ void ClientHandler::parseHeadersAndBody(RequestConfig& config) {
     }
 
     config.m_body = std::move(m_body);
+    config.m_clientFd = m_clientFd;
+    config.m_serverRoot = m_serverRoot;
+    config.m_contentTypes = m_contentTypes;
 }
+
+static void getLocationPrefix(const std::string& requestLocation, std::string& locationPrefix) {
+    locationPrefix = "";
+    // first simbol is always '/'
+    locationPrefix += requestLocation[0];
+    for(size_t i = 1; i < requestLocation.size(); ++i) {
+        if(requestLocation[i] == '/') {
+            break;
+        }
+        locationPrefix += requestLocation[i];
+    }
+}
+
+static std::string changePrefixWithLocation(const std::string& requestLocation, const std::string& locationToChange) {
+    // skip prefix
+    std::string res;
+    size_t i = 0;
+    for(size_t j = 0; j < locationToChange.size(); ++j) {
+        res += locationToChange[j];
+        ++i;
+    }
+    size_t startIndex = 1;
+    for(; startIndex < requestLocation.size(); ++startIndex) {
+        if(requestLocation[startIndex] == '/') {
+            break;
+        }
+    }
+    for(; startIndex < requestLocation.size(); ++startIndex) {
+        res[i] = requestLocation[startIndex];
+        ++i;
+    }
+    return res;
+}
+
 
 void ClientHandler::parseAndReplaceLocation(std::string& requestLocation) {
     // getting location prefix
-    std::stringstream requestLocationStream(requestLocation);
-    std::string prefix;
-    std::getline(requestLocationStream, prefix, '/');
-    if(requestLocation[0] == '/') {
-        prefix.insert(0, 1, '/');
-    }
-
-    if(m_locations->hasLocation(prefix)) {
-        std::string finalLocation = m_locations->getRoot(prefix);
-        while(std::getline(requestLocationStream, prefix, '/')) {
-            finalLocation += "/";
-            finalLocation += prefix;
-        }
-        requestLocation = std::move(finalLocation);
+    std::string locationPrefix = "";
+    getLocationPrefix(requestLocation, locationPrefix);
+    if(m_locations->hasLocation(locationPrefix)) {
+        std::string locationToChange = m_locations->getRoot(locationPrefix);
+        requestLocation = changePrefixWithLocation(requestLocation, locationToChange);
     }
 }
 

@@ -69,7 +69,7 @@ void Selector::run()
                 "addidng client to epoll");
         } else {
             // msg from previosly traced connection
-            ClientHandler clientHandler(m_serverRoot, m_locations, m_events[i].data.fd);
+            ClientHandler clientHandler(m_serverRoot, m_locations, m_contentTypes,m_events[i].data.fd);
             clientHandler.HandleRequest();
         }
     }

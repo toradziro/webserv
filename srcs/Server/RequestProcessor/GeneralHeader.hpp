@@ -33,6 +33,10 @@ public:
         return table.count(string) == 1;
     }
 
+    std::string Get(const std::string& key) {
+        return table[key];
+    }
+
     void AddValue(const std::string& key, const std::string& value) {
         table[key] = value;
     }
