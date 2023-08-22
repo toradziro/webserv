@@ -12,6 +12,7 @@
 #include <exception>
 #include <cassert>
 #include <csignal>
+#include <memory>
 
 #include <unistd.h>
 #include <sys/mman.h>

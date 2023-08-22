@@ -1,5 +1,9 @@
 #include <ClientHandler.hpp>
 #include <sstream>
+#include <RequestHandler.hpp>
+#include <GetRequestHandler.hpp>
+#include <PostRequestHandler.hpp>
+#include <RequestHandlerFabric.hpp>
 
 /*
 GET /pub/WWW/TheProject.html HTTP/1.1
@@ -24,6 +28,9 @@ ClientHandler::ClientHandler(std::string serverRoot, Locations* locations, int c
 void ClientHandler::HandleRequest() {
     readRequest();
     RequestConfig requestConfig = std::move(ClientHandler::parseRequest());
+    std::shared_ptr<RequestHandler> requestHandler = createRequestHandler(std::move(requestConfig));
+    requestHandler->prepareResponce();
+    requestHandler->sendResponse();
 #ifdef _DEBUG
     std::cout << "------location: " << requestConfig.m_location << std::endl;
     std::cout << "------body: " << requestConfig.m_body << std::endl;
@@ -93,6 +100,8 @@ void ClientHandler::parseHeadersAndBody(RequestConfig& config) {
             config.entityHeaderTable.AddValue(currHeader, value);
         }
     }
+
+    config.m_body = std::move(m_body);
 }
 
 void ClientHandler::parseAndReplaceLocation(std::string& requestLocation) {
@@ -100,6 +109,9 @@ void ClientHandler::parseAndReplaceLocation(std::string& requestLocation) {
     std::stringstream requestLocationStream(requestLocation);
     std::string prefix;
     std::getline(requestLocationStream, prefix, '/');
+    if(requestLocation[0] == '/') {
+        prefix.insert(0, 1, '/');
+    }
 
     if(m_locations->hasLocation(prefix)) {
         std::string finalLocation = m_locations->getRoot(prefix);
@@ -158,9 +170,6 @@ void ClientHandler::separateSections() {
         ++i;
     }
     i += 2;
-    std::cout << "m_header ----- " << m_header << std::endl;
     readSection(m_readMessage, i, m_extraHeaders);
-    std::cout << "m_extraHeaders ----- " << m_extraHeaders << std::endl;
     readSection(m_readMessage, i, m_body);
-    std::cout << "m_body ----- " << m_body << std::endl;
 }

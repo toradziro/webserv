@@ -1,13 +1,14 @@
 MODE		?=	Final
 NAME		=	webserv
 CXX			=	g++
-CXXFLAGS 	=	-std=c++11 -pthread -Wall -Wextra -Werror -MMD -fPIC
+CXXFLAGS 	=	-std=c++17 -pthread -Wall -Wextra -Werror -MMD -fPIC
 
 INC_DIRS 	=	-Iinc \
 				-I./srcs/Parser \
 				-I./srcs/Utils \
 				-I./srcs/Server \
 				-I./srcs/Server/RequestProcessor \
+				-I./srcs/Server/RequestProcessor/RequestHandler \
 
 SRC_DIR			=	./srcs/
 

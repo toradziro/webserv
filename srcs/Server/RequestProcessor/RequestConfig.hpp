@@ -15,8 +15,8 @@ enum RequestType {
 struct RequestConfig {
     GeneralHeader generalHeaderTable;
     RequestHeader requestHeaderTable;
-    EntityHeader entityHeaderTable;
-    std::string m_body;
-    std::string m_location;
-    RequestType m_reqType;
+    EntityHeader  entityHeaderTable;
+    std::string   m_body;
+    std::string   m_location;
+    RequestType   m_reqType;
 };
