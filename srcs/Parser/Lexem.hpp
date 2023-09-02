@@ -19,9 +19,6 @@ private:
     std::pair<std::string, std::string> m_location;
 
     ConfigErrors* m_errors;
-
-    bool checkContainEnvVar(const std::string& rootPath);
-    void readEnvVar(std::string& rootPath);
 };
 
 class ListenLexem : public InterfaceLexem {
@@ -63,6 +60,35 @@ public:
 
 private:
     std::string m_parsedPath;
+
+    ConfigErrors* m_errors;
+};
+
+class CgiAllowed : public InterfaceLexem {
+public:
+    CgiAllowed(ConfigErrors* errors) : m_errors(errors) {}
+    ~CgiAllowed() {}
+    // Interface realization
+    void parseLexem(const std::vector<token> tokens, size_t& currentIndex) override;
+    void addToServer(Server* serv) override;
+
+private:
+    std::string   m_allowedExtention;
+    std::string   m_extentionExecuter;
+
+    ConfigErrors* m_errors;
+};
+
+class CgiDirectory : public InterfaceLexem {
+public:
+    CgiDirectory(ConfigErrors* errors) : m_errors(errors) {}
+    ~CgiDirectory() {}
+    // Interface realization
+    void parseLexem(const std::vector<token> tokens, size_t& currentIndex) override;
+    void addToServer(Server* serv) override;
+
+private:
+    std::string   m_cgiDirectory;
 
     ConfigErrors* m_errors;
 };

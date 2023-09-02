@@ -37,10 +37,16 @@ static void debug_epoll_event(epoll_event ev){
 Selector::Selector(int serverSocket, int epollSocket,
                     Locations* locations,
                     ContentTypeCollection* contentTypeCollection,
-                    const std::string& serverRoot) :
+                    AllowedCGIExecutors* allowedCGI,
+                    const std::string& serverRoot,
+                    const std::string& CGILocation,
+                    const std::string& serverName) :
     m_serverRoot(serverRoot),
+    m_CGILocation(CGILocation),
+    m_serverName(serverName),
     m_contentTypes(contentTypeCollection),
     m_locations(locations), 
+    m_allowedCGI(allowedCGI),
     m_serverSocket(serverSocket),
     m_epollSocket(epollSocket)
 {
@@ -69,7 +75,7 @@ void Selector::run()
                 "addidng client to epoll");
         } else {
             // msg from previosly traced connection
-            ClientHandler clientHandler(m_serverRoot, m_locations, m_contentTypes,m_events[i].data.fd);
+            ClientHandler clientHandler(m_serverRoot, m_CGILocation, m_serverName, m_locations, m_contentTypes, m_allowedCGI, m_events[i].data.fd);
             clientHandler.HandleRequest();
         }
     }

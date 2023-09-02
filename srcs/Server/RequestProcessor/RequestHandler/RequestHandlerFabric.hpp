@@ -13,6 +13,7 @@ inline std::shared_ptr<RequestHandler> createRequestHandler(RequestConfig reques
         case RequestType::RT_POST:
             return std::make_shared<PostRequestHandler>(std::move(requestConfig));
             break;
+
         case RequestType::RT_PUT:
         case RequestType::RT_UNKNOWN:
             checkError(true, "request type isn't handeled");

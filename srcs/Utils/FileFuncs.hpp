@@ -10,90 +10,69 @@ enum FileType {
     FT_NONE
 };
 
-const int dirNameLength = 500;
-
-inline int getFileSize(int fd) {
-    struct stat info;
-
-    if(fstat(fd, &info) == -1)
-        return -1;
-    return info.st_size;
+[[nodiscard]] inline int getFileSize(const std::filesystem::path& pathToFile) {
+    return std::filesystem::file_size(pathToFile);
 }
 
 
-inline bool isFileExists(const std::string& name) {
-  struct stat info;   
-  return (stat(name.c_str(), &info) == 0); 
+[[nodiscard]] inline bool isFileExists(const std::filesystem::path& pathToFile) {
+  return std::filesystem::exists(pathToFile); 
 }
 
-inline std::string getFileExtention(std::string fileName) {
-    size_t pos = 0;
-    std::string token;
-    std::string delimiter = ".";
-    while ((pos = fileName.find(delimiter)) != std::string::npos) {
-        token = fileName.substr(0, pos);
-        fileName.erase(0, pos + delimiter.length());
-    }
-    return fileName;
+[[nodiscard]] inline std::string getFileExtention(const std::filesystem::path& pathToFile) {
+    return pathToFile.extension();
 }
 
-inline FileType fileType(int fd) {
-    struct stat info;
-
-    if(fstat(fd, &info) == -1)
-        return FT_NONE;
-    if(S_ISDIR(info.st_mode)) {
+[[nodiscard]]  inline FileType fileType(const std::filesystem::path& pathToFile) {
+    if(std::filesystem::is_directory(pathToFile)) {
         return FT_DIRECTORY;
-    } else if(S_ISREG(info.st_mode)) {
+    } else if(std::filesystem::is_regular_file(pathToFile)) {
         return FT_FILE;
-    } else if(S_ISLNK(info.st_mode)) {
+    } else if(std::filesystem::is_symlink(pathToFile)) {
         return FT_FILE;
     }
     return FT_NONE;
 }
 
-inline bool dirContainsFile(std::string dirName, std::string fileName) {
-    DIR* dirPointer = opendir(dirName.c_str());
-    // TODO: LOOOOOOG NOT ASSERT
-    checkError(dirPointer == nullptr, "dir can't be opened");
-    struct dirent* dirInfo = nullptr;
-    while((dirInfo = readdir(dirPointer)) != NULL) {
-        if(dirInfo->d_name == fileName) {
+[[nodiscard]] inline bool dirContainsFile(const std::filesystem::path& pathToFile, std::string fileName) {
+    std::filesystem::directory_iterator directoryIterator(pathToFile);
+    for(const auto& file : directoryIterator) {
+        if(file.path().filename() == fileName) {
             return true;
         }
     }
-    closedir(dirPointer);
     return false;
 }
 
-inline std::vector<std::string> listDirContent(std::string dirName) {
-    std::vector<std::string> res;
-    DIR* dirPointer = opendir(dirName.c_str());
-    // TODO: LOOOOOOG NOT ASSERT
-    checkError(dirPointer == nullptr, "dir can't be opened");
-    struct dirent* dirInfo = nullptr;
-    while((dirInfo = readdir(dirPointer)) != NULL) {
-        std::string dirName(dirInfo->d_name);
-        res.push_back(dirName);
+inline std::vector<std::filesystem::path> listDirContent(const std::filesystem::path& dirName) {
+    std::vector<std::filesystem::path> res;
+    std::filesystem::directory_iterator directoryIterator(dirName);
+    for(const auto& file : directoryIterator) {
+        res.push_back(file.path());
     }
-    closedir(dirPointer);
     return res;
 }
 
-inline std::string GetCurrentDirectory() {
-    char* directoryName = (char*)calloc(dirNameLength, sizeof(char));
-    checkError(directoryName == NULL, "memory allocation error");
-    directoryName = getcwd(directoryName, dirNameLength);
-    if(directoryName == NULL) {
-        if(errno == ERANGE) {
-            free(directoryName);
-            directoryName = (char*)calloc(dirNameLength * 1.5, sizeof(char));
-            directoryName = getcwd(directoryName, dirNameLength);
-            checkError(directoryName == NULL, "getcwd error");
+inline std::filesystem::path GetCurrentDirectory() {
+    return std::filesystem::current_path();
+}
+
+inline bool validateLocation(std::string serverRoot, std::string requestedLocation) {
+    // for case:
+    // Requested location is: /home/ehillman/my_projs/webserv/test_files/cgi-index
+    // Server root is: /home/ehillman/my_projs/webserv/test_files/cgi 
+    if(serverRoot[serverRoot.size() - 1] != '/') {
+        serverRoot += '/';
+    }
+    if(requestedLocation[requestedLocation.size() - 1] != '/') {
+        requestedLocation += '/';
+    }
+    std::cout << "Server root is: " << serverRoot << std::endl;
+    std::cout << "Requested location is: " << requestedLocation << std::endl;
+    for(size_t i = 0; i < serverRoot.size(); ++i) {
+        if(serverRoot[i] != requestedLocation[i]) {
+            return false;
         }
     }
-    std::string currentDirectory(directoryName);
-    std::cout << "DIRECTORY NAME:" << directoryName << std::endl;
-    free(directoryName);
-    return currentDirectory;
+    return true;
 }

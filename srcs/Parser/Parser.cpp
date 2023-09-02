@@ -18,7 +18,8 @@ const std::vector<std::string> validLabels {
     "server_name",
     "worker_threads",
     "server_root",
-    "request_allowed"
+    "cgi_server_pass",
+    "cgi_dir",
 };
 
 static bool isValidLabel(const token& _token) {
@@ -113,7 +114,7 @@ Config* parseConfig(const std::string& confPath) {
     int configFileFd = open(confPath.c_str(), O_RDONLY | O_EXCL);
     checkError(configFileFd == -1, "wasn't able to open config file: ");
 
-    int fileSize = getFileSize(configFileFd);
+    int fileSize = getFileSize(confPath);
     checkError(fileSize == -1, "wasn't able to get config size");
     // Map config file in memory
     char* configMapping = (char*)mmap(NULL,

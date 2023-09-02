@@ -19,16 +19,22 @@ Content-Length: 27
 field1=value1&field2=value2
 */
 
-ClientHandler::ClientHandler(const std::string& serverRoot, Locations* locations, 
-                ContentTypeCollection* contentTypes, int clientFd) :
+ClientHandler::ClientHandler(const std::string& serverRoot, const std::string& CGILocation, const std::string& serverName, 
+                Locations* locations, ContentTypeCollection* contentTypes, AllowedCGIExecutors* allowedCGI, int clientFd) :
                 m_serverRoot(serverRoot),
+                m_CGILocation(CGILocation),
+                m_serverName(serverName),
                 m_contentTypes(contentTypes),
                 m_locations(locations),
+                m_allowedCGI(allowedCGI),
                 m_clientFd(clientFd)
 { }
 
 void ClientHandler::HandleRequest() {
     readRequest();
+    if(m_readMessage == "") {
+        return;
+    }
     RequestConfig requestConfig = std::move(ClientHandler::parseRequest());
     std::shared_ptr<RequestHandler> requestHandler = createRequestHandler(std::move(requestConfig));
     requestHandler->prepareResponce();
@@ -49,9 +55,16 @@ RequestConfig ClientHandler::parseRequest() {
     std::stringstream headerStream(m_header);
     std::string methodName;
     headerStream >> methodName >> requestConfig.m_location;
+
     requestConfig.m_reqType = parseRequestType(methodName);
-    parseAndReplaceLocation(requestConfig.m_location);
-    parseHeadersAndBody(requestConfig);
+    parseAndReplaceLocation(requestConfig.m_location, requestConfig);
+    if(requestConfig.m_reqType == RequestType::RT_GET) {
+        parseHeadersAndBody(requestConfig);
+    } else {
+        m_body += m_extraHeaders + m_body;
+    }
+    fillConfigWithCommonInfo(requestConfig);
+    
     return requestConfig;
 }
 
@@ -103,12 +116,18 @@ void ClientHandler::parseHeadersAndBody(RequestConfig& config) {
             config.entityHeaderTable.AddValue(currHeader, value);
         }
     }
+}
 
+void ClientHandler::fillConfigWithCommonInfo(RequestConfig& config) {
     config.m_body = std::move(m_body);
     config.m_clientFd = m_clientFd;
-    config.m_serverRoot = m_serverRoot;
+    config.m_serverRoot = std::move(m_serverRoot);
     config.m_contentTypes = m_contentTypes;
+    config.m_allowedCGI = m_allowedCGI;
+    config.m_CGILocation = std::move(m_CGILocation);
+    config.m_serverName = std::move(m_serverName);
 }
+
 
 static void getLocationPrefix(const std::string& requestLocation, std::string& locationPrefix) {
     locationPrefix = "";
@@ -137,14 +156,24 @@ static std::string changePrefixWithLocation(const std::string& requestLocation, 
         }
     }
     for(; startIndex < requestLocation.size(); ++startIndex) {
-        res[i] = requestLocation[startIndex];
+        // res[i] = requestLocation[startIndex];
+        res += requestLocation[startIndex];
         ++i;
     }
     return res;
 }
 
+[[nodiscard]]static inline size_t checkContainsQueryString(const std::string& location) {
+    return location.find('?');
+}
 
-void ClientHandler::parseAndReplaceLocation(std::string& requestLocation) {
+void ClientHandler::parseAndReplaceLocation(std::string& requestLocation, RequestConfig& config) {
+    // check if contains query string
+    size_t queryStringPos = checkContainsQueryString(requestLocation);
+    if(queryStringPos != requestLocation.npos) {
+        config.m_queryString = requestLocation.substr(queryStringPos + 1);
+        requestLocation.resize(queryStringPos);
+    }
     // getting location prefix
     std::string locationPrefix = "";
     getLocationPrefix(requestLocation, locationPrefix);
@@ -203,4 +232,5 @@ void ClientHandler::separateSections() {
     i += 2;
     readSection(m_readMessage, i, m_extraHeaders);
     readSection(m_readMessage, i, m_body);
+    std::cout << m_header << std::endl << m_extraHeaders << std::endl << m_body << std::endl; 
 }

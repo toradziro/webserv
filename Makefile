@@ -25,6 +25,9 @@ SRCS_NAMES		=	main.cpp \
 					Server/Server.cpp \
 					Server/Selector.cpp \
 					Server/RequestProcessor/RequestHandler/GetRequestHandler.cpp \
+					Server/RequestProcessor/RequestHandler/PostRequestHandler.cpp \
+					Server/RequestProcessor/RequestHandler/CommonResponseSender.cpp \
+					Server/RequestProcessor/RequestHandler/CGI.cpp \
 
 SRCS		= $(addprefix $(SRC_DIR), $(SRCS_NAMES))
 

@@ -29,8 +29,16 @@ void Server::setServerRoot(const std::string& serverRoot) {
     m_serverRoot = serverRoot;
 }
 
+void Server::setCgiDirectory(const std::string& cgiDirectory) {
+    m_cgiDirectory = cgiDirectory;
+}
+
 void Server::addLocation(const std::string& locationName, const std::string& locationRoot) {
     m_locations.addLocation(locationName, locationRoot);
+}
+
+void Server::addExecutor(const std::string& extention, const std::string& executor) {
+    m_executors.Add(extention, executor);
 }
 
 void Server::checkServerInstance() {
@@ -75,11 +83,12 @@ void Server::prepareForStart() {
         m_serverRoot = GetCurrentDirectory();
     }
     std::cout << "Succesfully prepared server" << std::endl;
+    std::cout << m_cgiDirectory << std::endl;
 }
 
 void Server::start() {
     m_isRunning = true;
-    Selector selector(m_serverSocket, m_epollFd, &m_locations, m_contentTypes, m_serverRoot);
+    Selector selector(m_serverSocket, m_epollFd, &m_locations, m_contentTypes, &m_executors, m_serverRoot, m_cgiDirectory, m_serverName);
 #ifdef _MEMORY_PROFILE
     int iterationCount = 0;
 #endif
