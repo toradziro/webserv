@@ -3,6 +3,7 @@
 #include <common_inc.h>
 #include <Locations.hpp>
 #include <ContentTypeCollection.hpp>
+#include <AllowedCGIExecutors.hpp>
 
 #define EVENTS_NUM  1024
 #define INFINITE    -1
@@ -13,14 +14,20 @@ public:
                     int epollSocket,
                     Locations* locations,
                     ContentTypeCollection* contentTypeCollection,
-                    const std::string& serverRoot);
+                    AllowedCGIExecutors* allowedCGI,
+                    const std::string& serverRoot,
+                    const std::string& CGILocation,
+                    const std::string& serverName);
     void run();
 
 private:
     struct epoll_event      m_events[EVENTS_NUM];
     std::string             m_serverRoot;
+    std::string             m_CGILocation;
+    std::string             m_serverName;
     ContentTypeCollection*  m_contentTypes;
     Locations*              m_locations;
+    AllowedCGIExecutors*    m_allowedCGI;
     int                     m_serverSocket;
     int                     m_epollSocket;
 };

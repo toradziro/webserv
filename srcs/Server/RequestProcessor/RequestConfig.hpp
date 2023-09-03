@@ -5,6 +5,7 @@
 #include <EntityHeader.hpp>
 #include <GeneralHeader.hpp>
 #include <ContentTypeCollection.hpp>
+#include <AllowedCGIExecutors.hpp>
 
 enum RequestType {
     RT_GET,
@@ -19,8 +20,12 @@ struct RequestConfig {
     EntityHeader            entityHeaderTable;
     std::string             m_body;
     std::string             m_serverRoot;
+    std::string             m_CGILocation;
     std::string             m_location;
+    std::string             m_queryString;
+    std::string             m_serverName;
     ContentTypeCollection*  m_contentTypes;
+    AllowedCGIExecutors*    m_allowedCGI;
     RequestType             m_reqType;
     int                     m_clientFd;
 };

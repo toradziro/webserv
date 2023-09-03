@@ -53,7 +53,7 @@ public:
         return table.count(string) == 1;
     }
 
-    std::string Get(const std::string& key) {
+    std::string Get(const std::string& key) const {
         return table[key];
     }
 
@@ -68,5 +68,5 @@ public:
     }
     
 private:
-    std::unordered_map<std::string, std::string> table;     
+    mutable std::unordered_map<std::string, std::string> table;     
 };
