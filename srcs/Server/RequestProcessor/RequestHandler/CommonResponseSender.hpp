@@ -1,7 +1,6 @@
 #pragma once
 
 #include <common_inc.h>
-const std::string page404 = "./test_files/404_not_found.html";
 const std::string httpType = "HTTP/1.1";
 
 const int bufferSize = 8192;

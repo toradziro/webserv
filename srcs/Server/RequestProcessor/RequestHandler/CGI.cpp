@@ -1,10 +1,10 @@
 #include <CGI.hpp>
 #include <FileFuncs.hpp>
-#include <mutex>
+#include <ErrorSender.hpp>
+#include <SecureMemset.h>
 
 const int readEnd = 0;
 const int writeEnd = 1;
-const int bufferSize = 8192;
 
 std::mutex evrionsMutex;
 
@@ -15,22 +15,30 @@ CGI::CGI(const RequestConfig& requestConfig) {
     } else if(!requestConfig.m_allowedCGI->Has(fileExtention)) {
         // responce 500
         m_isError = true;
-        checkError(true, "server is not allowed to execute this extention of file");
+        return;
     } else {
         m_args.push_back(requestConfig.m_allowedCGI->Get(fileExtention));
         m_args.push_back(requestConfig.m_location);
     }
     m_cgiMode = m_args.size() == 1 ? CGIMode::CM_BINARY : CGIMode::CM_INTERPRETER;
+    m_msgForChild = std::move(requestConfig.m_body);
     setEnviromentVariables(requestConfig);
 }
 
 void CGI::processCGI() {
+    if(m_isError) {
+        return;
+    }
     char *argForExec[3] = { NULL, NULL, NULL };
     if(m_cgiMode == CGIMode::CM_BINARY) {
         argForExec[0] = strdup(m_args[0].c_str());
     } else {
         argForExec[0] = strdup(m_args[0].c_str());
         argForExec[1] = strdup(m_args[1].c_str());
+    }
+    if(argForExec[0] == nullptr) {
+        m_isError = true;
+        return;
     }
 
     std::cout << "==" << argForExec[0] << "====" << argForExec[1] << "==" << std::endl;
@@ -48,6 +56,7 @@ void CGI::processCGI() {
     // lock mutex to protect evrions be rewriten by other threads
     evrionsMutex.lock();
     for(auto& it : m_envs) {
+        std::cout << it.first << "====" << it.second << std::endl;
         setenv(it.first.c_str(), it.second.c_str(), 1);
     }
     pid_t child = fork();
@@ -74,7 +83,7 @@ void CGI::processCGI() {
         evrionsMutex.unlock();
         
         waitpid(child, NULL, 0);
-        memset(buffer, 0, bufferSize);
+        secure_zero(buffer, bufferSize);
         while(read(readFd[readEnd], buffer, bufferSize) > 0) {
             m_outputBuffer += std::string(buffer);
         }
@@ -111,12 +120,12 @@ static std::string requestTypeToString(RequestType requestType) {
 
 void CGI::setEnviromentVariables(const RequestConfig& requestConfig) {
     m_envs["QUERY_STRING"] = requestConfig.m_queryString;
-    m_envs["CONTENT_LENGTH"] = requestConfig.entityHeaderTable.Get("Content-Length");
-    m_envs["CONTENT_TYPE"] = requestConfig.entityHeaderTable.Get("Content-Type");
+    m_envs["CONTENT_LENGTH"] = requestConfig.entityHeaderTable.Get("Content-Length:");
+    m_envs["CONTENT_TYPE"] = requestConfig.entityHeaderTable.Get("Content-Type:");
     m_envs["GATEWAY_INTERFACE"] = "CGI/1.1";
     m_envs["PATH_INFO"] = requestConfig.m_location;
     m_envs["PATH_TRANSLATED"] = requestConfig.m_location;
-    m_envs["REMOTE_HOST"] = requestConfig.requestHeaderTable.Get("User-Agent");
+    m_envs["REMOTE_HOST"] = requestConfig.requestHeaderTable.Get("User-Agent:");
     m_envs["REQUEST_METHOD"] = requestTypeToString(requestConfig.m_reqType);
     m_envs["SERVER_PROTOCOL"] = "HTTP/1.1";
     m_envs["SERVER_NAME"] = requestConfig.m_serverName;

@@ -1,6 +1,7 @@
 #include <PostRequestHandler.hpp>
 #include <FileFuncs.hpp>
 #include <CommonResponseSender.hpp>
+#include <ErrorSender.hpp>
 #include <CGI.hpp>
 
 PostRequestHandler::PostRequestHandler(RequestConfig requestConfig) : 
@@ -9,35 +10,30 @@ PostRequestHandler::PostRequestHandler(RequestConfig requestConfig) :
 
 void PostRequestHandler::prepareResponce() {
     if(!validateLocation(m_requestConfig.m_serverRoot, m_requestConfig.m_location) || !isFileExists(m_requestConfig.m_location)) {
-        std::string contentType = "text/html";
-        m_responseCode = Error404;
-        m_requestConfig.m_location = page404;
-        int fileFd = open(m_requestConfig.m_location.c_str(), O_RDONLY);
-        checkError(fileFd == -1, "can't open file: " + m_requestConfig.m_location);
-        CommonResponseSender responseSender(m_requestConfig.m_clientFd, fileFd, 
-                                    std::move(m_responseCode), std::move(contentType),
-                                    page404);
-        responseSender.sendResponse();
-        m_404Answered = true;
+        sendError(ErrorCode::EC_404, m_requestConfig.m_clientFd);
+        m_isError = true;
         return;
     } else {
         m_responseCode = Ok200;
     }
     if(!validateLocation(m_requestConfig.m_CGILocation, m_requestConfig.m_location)) {
-        m_responseCode = Error403;
+        sendError(ErrorCode::EC_403, m_requestConfig.m_clientFd);
+        m_isError = true;
         return;
     }
+    // m_requestConfig.entityHeaderTable.debugPrint();
     CGI cgiProcessor(m_requestConfig);
     cgiProcessor.processCGI();
     if(cgiProcessor.isError()) {
-        m_responseCode = Error500;
+        sendError(ErrorCode::EC_500, m_requestConfig.m_clientFd);
+        m_isError = true;
         return;
     }
     m_responseBody = std::move(cgiProcessor.getBuffer());
 }
 
 void PostRequestHandler::sendResponse() {
-    if(m_404Answered) {
+    if(m_isError) {
         return;
     }
     CommonResponseSender responseSender(m_requestConfig.m_clientFd, std::move(m_responseBody), m_responseCode);

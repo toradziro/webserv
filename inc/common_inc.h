@@ -17,6 +17,7 @@
 #include <filesystem>
 #include <charconv>
 #include <algorithm>
+#include <mutex>
 
 #include <unistd.h>
 #include <sys/mman.h>

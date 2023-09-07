@@ -41,6 +41,7 @@ Selector::Selector(int serverSocket, int epollSocket,
                     const std::string& serverRoot,
                     const std::string& CGILocation,
                     const std::string& serverName) :
+    m_events{},
     m_serverRoot(serverRoot),
     m_CGILocation(CGILocation),
     m_serverName(serverName),
@@ -56,7 +57,8 @@ void Selector::run()
 {
     int eventsOccuredNum = epoll_wait(m_epollSocket, m_events, EVENTS_NUM, INFINITE);
     if(eventsOccuredNum == -1) {
-        checkError(eventsOccuredNum == -1, "epoll interface got broken on wait");
+        checkError(true, "epoll interface got broken on wait");
+        std::terminate();
     }
     for(int i = 0; i < eventsOccuredNum; ++i) {
         debug_epoll_event(m_events[i]);

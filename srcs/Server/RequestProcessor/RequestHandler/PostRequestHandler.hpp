@@ -17,5 +17,5 @@ private:
     RequestConfig m_requestConfig;
     std::string   m_responseCode;
     std::string   m_responseBody;
-    bool          m_404Answered = false;
+    bool          m_isError = false;
 };

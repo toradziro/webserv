@@ -1,5 +1,10 @@
 #include <CommonResponseSender.hpp>
 #include <FileFuncs.hpp>
+#include <SecureMemset.h>
+
+static void setNullBuffer(char* buffer) {
+        secure_zero(buffer, bufferSize);
+}
 
 CommonResponseSender::CommonResponseSender(int clientFd, int fileFd, 
                                     std::string responseCode,
@@ -11,15 +16,20 @@ CommonResponseSender::CommonResponseSender(int clientFd, int fileFd,
                                 m_ResponseFSM(PreparationType::PT_File),
                                 m_clientFd(clientFd),
                                 m_fileFd(fileFd)
-{}
+{
+    setNullBuffer(m_buffer);
+}
 
 CommonResponseSender::CommonResponseSender(int clientFd, std::string responseBody, 
                                         std::string responseCode) :
                                     m_responseBody(std::move(responseBody)),
                                     m_responseCode(std::move(responseCode)),
                                     m_ResponseFSM(PreparationType::PT_Buffer),
-                                    m_clientFd(clientFd)
-{}
+                                    m_clientFd(clientFd),
+                                    m_fileFd(-1)
+{
+    setNullBuffer(m_buffer);
+}
 
 void CommonResponseSender::sendResponse() {
     int bodySize = 0;
@@ -51,7 +61,7 @@ void CommonResponseSender::sendResponse() {
 }
 
 int CommonResponseSender::getNextChank() {
-    memset(m_buffer, 0, bufferSize);
+    secure_zero(m_buffer, bufferSize);
     int res = 0;
     if(m_ResponseFSM == PreparationType::PT_Buffer) {
         while(res < bufferSize && m_currentBufferIt < m_responseBody.size()) {

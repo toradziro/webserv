@@ -13,6 +13,7 @@ INC_DIRS 	=	-Iinc \
 SRC_DIR			=	./srcs/
 
 SRCS_NAMES		=	main.cpp \
+					Utils/SecureMemset.cpp \
 					Parser/Parser.cpp \
 					Parser/Lexem.cpp \
 					Parser/LexemsCollection.cpp \
@@ -28,6 +29,7 @@ SRCS_NAMES		=	main.cpp \
 					Server/RequestProcessor/RequestHandler/PostRequestHandler.cpp \
 					Server/RequestProcessor/RequestHandler/CommonResponseSender.cpp \
 					Server/RequestProcessor/RequestHandler/CGI.cpp \
+					Server/RequestProcessor/RequestHandler/ErrorSender.cpp \
 
 SRCS		= $(addprefix $(SRC_DIR), $(SRCS_NAMES))
 
@@ -54,6 +56,7 @@ DEPS	= $(OBJS:.o=.d)
 
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
+	@cd test_files/cgi-bin && $(MAKE) && cd ../..
 
 all: $(NAME)
 
@@ -70,6 +73,10 @@ fclean: clean
 	@rm -f valgrind.log
 	@rm -f speed_test.log
 	@rm -f utilites/autotest/autotest
+	@rm -f PVS-Studio.log
+	@rm -f report.tasks
+	@rm -f strace_out
+	@rm -f test_files/cgi-bin/CgiTest
 
 re: fclean all
 

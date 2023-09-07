@@ -26,4 +26,5 @@ private:
     int           m_bodySize = -1;
     bool          m_isAutoindex = false;
     bool          m_isCGIScenario = false;
+    bool          m_isErrorSent = false;
 };

@@ -31,7 +31,7 @@ public:
 
 private:
     std::string m_ipAddress;
-    uint16_t    m_port;
+    uint16_t    m_port = 0;
 
     ConfigErrors* m_errors;
 };

@@ -1,5 +1,6 @@
 #include <ContentTypeParser.hpp>
 #include <Errors.hpp>
+#include <SecureMemset.h>
 
 const char* contentTypesConfig = "./available_data_types/content_types.conf";
 
@@ -39,7 +40,7 @@ void ContentTypeParser::ParseContentType() {
         std::string contentType = getWord(line, index);
         skipWhiteSpaces(line, index);
         std::string extention = getWord(line, index);
-        memset(line, 0, strlen(line));
+        secure_zero(line, strlen(line));
         m_typesCollection->addType(extention, contentType);
         free(line);
         line = NULL;

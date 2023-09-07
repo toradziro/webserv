@@ -4,8 +4,8 @@
 
 extern std::sig_atomic_t gSignalStatus;
 
-Server::Server() : m_ipAddress(""), m_serverName(""), m_epollFd(-1),
-    m_serverSocket(-1), m_listenPort(0), m_isRunning(false)
+Server::Server() : m_contentTypes(nullptr), m_epollEvent{}, m_ipAddress(""), m_serverName(""), 
+                    m_epollFd(-1), m_serverSocket(-1), m_listenPort(0), m_isRunning(false)
 {
 }
 

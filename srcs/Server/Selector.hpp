@@ -5,8 +5,8 @@
 #include <ContentTypeCollection.hpp>
 #include <AllowedCGIExecutors.hpp>
 
-#define EVENTS_NUM  1024
-#define INFINITE    -1
+const int EVENTS_NUM = 1024;
+const int INFINITE = -1;
 
 class Selector {
 public:

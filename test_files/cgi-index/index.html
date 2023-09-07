@@ -12,9 +12,28 @@
                   <button>GET: env.sh</button>
                 </div>
         </form>
+        <form action="http://127.0.0.1:8080/binary_cgi_test" method="POST">
+                <div>
+                  <button>POST: binary env program</button>
+                </div>
+        </form>
         <form action="http://127.0.0.1:8080/cgi-test/query_string_test.html" method="GET">
                 <div>
                   <button>GET query string test html</button>
+                </div>
+        </form>
+        <form action="http://127.0.0.1:8080/post_body_test" method="POST">
+                <div>
+                  <button>POST input test</button>
+                  <input type="text" id="name" name="name">
+                  <input type="text" id="email" name="email">
+                </div>
+        </form>
+
+        <form action="http://127.0.0.1:8080/py_test" method="POST" target = "_blank">
+                <div>
+                <textarea name = "textcontent" cols = "40" rows = "4">Type your text here it will be sent to .py cgi script via POST request...</textarea>
+                <input type = "submit" value = "Submit" />
                 </div>
         </form>
 </body>

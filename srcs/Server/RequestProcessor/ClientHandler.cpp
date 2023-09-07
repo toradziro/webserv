@@ -36,9 +36,6 @@ void ClientHandler::HandleRequest() {
         return;
     }
     RequestConfig requestConfig = std::move(ClientHandler::parseRequest());
-    std::shared_ptr<RequestHandler> requestHandler = createRequestHandler(std::move(requestConfig));
-    requestHandler->prepareResponce();
-    requestHandler->sendResponse();
     
 #ifdef _DEBUG
     std::cout << "------location: " << requestConfig.m_location << std::endl;
@@ -47,6 +44,9 @@ void ClientHandler::HandleRequest() {
     requestConfig.generalHeaderTable.debugPrint();
     requestConfig.requestHeaderTable.debugPrint();
 #endif
+    std::shared_ptr<RequestHandler> requestHandler = createRequestHandler(std::move(requestConfig));
+    requestHandler->prepareResponce();
+    requestHandler->sendResponse();
 }
 
 RequestConfig ClientHandler::parseRequest() {
@@ -58,11 +58,7 @@ RequestConfig ClientHandler::parseRequest() {
 
     requestConfig.m_reqType = parseRequestType(methodName);
     parseAndReplaceLocation(requestConfig.m_location, requestConfig);
-    if(requestConfig.m_reqType == RequestType::RT_GET) {
-        parseHeadersAndBody(requestConfig);
-    } else {
-        m_body += m_extraHeaders + m_body;
-    }
+    parseHeadersAndBody(requestConfig);
     fillConfigWithCommonInfo(requestConfig);
     
     return requestConfig;
@@ -185,7 +181,10 @@ void ClientHandler::parseAndReplaceLocation(std::string& requestLocation, Reques
 
 void ClientHandler::readRequest() {
     char* clientMessage = (char*)calloc(messageLenght, sizeof(char));
-    checkError(clientMessage == NULL, "didn't allocated space for client");
+    if(clientMessage == nullptr) {
+        checkError(true, "didn't allocated space for client");
+        return;
+    }
     int wasRecived = 0;
 
     while(true) {
