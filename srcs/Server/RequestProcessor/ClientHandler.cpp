@@ -4,6 +4,7 @@
 #include <GetRequestHandler.hpp>
 #include <PostRequestHandler.hpp>
 #include <RequestHandlerFabric.hpp>
+#include <Log.hpp>
 
 /*
 GET /pub/WWW/TheProject.html HTTP/1.1
@@ -44,9 +45,16 @@ void ClientHandler::HandleRequest() {
     requestConfig.generalHeaderTable.debugPrint();
     requestConfig.requestHeaderTable.debugPrint();
 #endif
+    LogMessage("Worker thread number: " + std::to_string(m_threadId) + " takes " + 
+                requestConfig.m_requestStringName + " request from client: " + std::to_string(m_clientFd));
     std::shared_ptr<RequestHandler> requestHandler = createRequestHandler(std::move(requestConfig));
-    requestHandler->prepareResponce();
-    requestHandler->sendResponse();
+    try {
+        requestHandler->prepareResponce();
+        requestHandler->sendResponse();
+    } catch(CException* e) {
+        LogMessage(e->getDescription());
+        delete e;
+    }
 }
 
 RequestConfig ClientHandler::parseRequest() {
@@ -57,6 +65,7 @@ RequestConfig ClientHandler::parseRequest() {
     headerStream >> methodName >> requestConfig.m_location;
 
     requestConfig.m_reqType = parseRequestType(methodName);
+    requestConfig.m_requestStringName = std::move(methodName);
     parseAndReplaceLocation(requestConfig.m_location, requestConfig);
     parseHeadersAndBody(requestConfig);
     fillConfigWithCommonInfo(requestConfig);
@@ -231,5 +240,7 @@ void ClientHandler::separateSections() {
     i += 2;
     readSection(m_readMessage, i, m_extraHeaders);
     readSection(m_readMessage, i, m_body);
+#ifdef _DEBUG
     std::cout << m_header << std::endl << m_extraHeaders << std::endl << m_body << std::endl; 
+#endif
 }

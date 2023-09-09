@@ -15,9 +15,54 @@ public:
 
     void HandleRequest();
 
+    ClientHandler(ClientHandler&& another) {
+        m_body = std::move(another.m_body);
+        m_readMessage = std::move(another.m_readMessage);
+        m_header = std::move(another.m_header);
+        m_extraHeaders = std::move(another.m_extraHeaders);
+        m_serverRoot = std::move(another.m_serverRoot);
+        m_CGILocation = std::move(another.m_CGILocation);
+        m_serverName = std::move(another.m_serverName);
+        m_contentTypes = another.m_contentTypes;
+        m_locations = another.m_locations;
+        m_allowedCGI = another.m_allowedCGI;
+        m_clientFd = another.m_clientFd;
+
+        another.m_contentTypes = nullptr;
+        another.m_locations = nullptr;
+        another.m_allowedCGI = nullptr;
+        another.m_clientFd = -1;
+    }
+
+    ClientHandler& operator=(ClientHandler&& another) {
+        if(&another != this) {
+            m_body = std::move(another.m_body);
+            m_readMessage = std::move(another.m_readMessage);
+            m_header = std::move(another.m_header);
+            m_extraHeaders = std::move(another.m_extraHeaders);
+            m_serverRoot = std::move(another.m_serverRoot);
+            m_CGILocation = std::move(another.m_CGILocation);
+            m_serverName = std::move(another.m_serverName);
+            m_contentTypes = another.m_contentTypes;
+            m_locations = another.m_locations;
+            m_allowedCGI = another.m_allowedCGI;
+            m_clientFd = another.m_clientFd;
+
+            another.m_contentTypes = nullptr;
+            another.m_locations = nullptr;
+            another.m_allowedCGI = nullptr;
+            another.m_clientFd = -1;
+        }
+        return *this;
+    }
+
     ClientHandler(const ClientHandler&) = delete;
     ClientHandler operator=(const ClientHandler&) = delete;
     ClientHandler() = delete;
+
+    void setThreadId(int threadId) {
+        m_threadId = threadId;
+    }
 
 private:
     RequestConfig parseRequest();
@@ -39,4 +84,5 @@ private:
     Locations*              m_locations;
     AllowedCGIExecutors*    m_allowedCGI;
     int                     m_clientFd;
+    int                     m_threadId = -1;
 };

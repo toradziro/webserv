@@ -5,8 +5,7 @@ name=`echo "$QUERY_STRING" | awk '{split($0,array,"&")} END{print array[1]}' | a
 email=`echo "$QUERY_STRING" | awk '{split($0,array,"&")} END{print array[2]}' | awk '{split($0,array,"=")} END{print array[2]}'`
 #echo "<h1>Welcome " $name "!</h1>"
 #echo "<h2>Your email address is " $email
-cat <<EOT
-<!DOCTYPE html>
+echo "<!DOCTYPE html>
 <html>
 <head>
         <title>Welcome to our application</title>
@@ -15,4 +14,4 @@ cat <<EOT
         <h1>Welcome $name </h1>
         <h2> Your e-mail address is $email <h2>
 </body>
-</html>
+</html>"

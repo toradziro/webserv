@@ -18,6 +18,8 @@ InterfaceLexem* createLexemByToken(const token& _token, ConfigErrors* errors) {
         lexem = new CgiAllowed(errors);
     } else if(_token == "cgi_dir") {
         lexem = new CgiDirectory(errors);
+    } else if(_token == "working_threads") {
+        lexem = new WorkingThreads(errors);
     }
     return lexem;
 }
@@ -190,10 +192,11 @@ void CgiDirectory::addToServer(Server* serv) {
     serv->setCgiDirectory(m_cgiDirectory);
 }
 
-
 void CgiDirectory::parseLexem(const std::vector<token> tokens, size_t& currentIndex) {
     increaseIndex(currentIndex, tokens.size(), tokens, m_errors);
+#ifdef _DEBUG
     std::cout << tokens[currentIndex] << std::endl;
+#endif
     m_cgiDirectory = std::move(tokens[currentIndex]);
     if(checkContainEnvVar(m_cgiDirectory)) {
         readEnvVar(m_cgiDirectory, m_errors);
@@ -202,4 +205,20 @@ void CgiDirectory::parseLexem(const std::vector<token> tokens, size_t& currentIn
 
 void CgiAllowed::addToServer(Server* serv) {
     serv->addExecutor(m_allowedExtention, m_extentionExecuter);
+}
+
+void WorkingThreads::parseLexem(const std::vector<token> tokens, size_t& currentIndex) {
+    increaseIndex(currentIndex, tokens.size(), tokens, m_errors);
+#ifdef _DEBUG
+    std::cout << tokens[currentIndex] << std::endl;
+#endif
+    std::from_chars(tokens[currentIndex].c_str(), tokens[currentIndex].c_str() + 
+                    tokens[currentIndex].size(), m_threadsCount);
+#ifdef _DEBUG
+    std::cout << "THREAD COUNT: " << std::to_string(m_threadsCount) << std::endl;
+#endif
+}
+
+void WorkingThreads::addToServer(Server* serv) {
+    serv->setThreadsCount(m_threadsCount);
 }

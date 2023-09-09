@@ -4,6 +4,7 @@
 #include <Locations.hpp>
 #include <ContentTypeCollection.hpp>
 #include <AllowedCGIExecutors.hpp>
+#include <ThreadPool.hpp>
 
 const int EVENTS_NUM = 1024;
 const int INFINITE = -1;
@@ -18,7 +19,7 @@ public:
                     const std::string& serverRoot,
                     const std::string& CGILocation,
                     const std::string& serverName);
-    void run();
+    void run(ThreadPool& tp);
 
 private:
     struct epoll_event      m_events[EVENTS_NUM];

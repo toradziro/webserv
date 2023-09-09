@@ -1,6 +1,7 @@
 #include <CommonResponseSender.hpp>
 #include <FileFuncs.hpp>
 #include <SecureMemset.h>
+#include <Log.hpp>
 
 static void setNullBuffer(char* buffer) {
         secure_zero(buffer, bufferSize);
@@ -56,8 +57,8 @@ void CommonResponseSender::sendResponse() {
     if(m_fileFd != -1) {
         close(m_fileFd);
     }
+    LogMessage("succesfully sent response to client: " + std::to_string(m_clientFd));
     close(m_clientFd);
-    std::cout << "succesfully sent data\n" << std::endl;
 }
 
 int CommonResponseSender::getNextChank() {

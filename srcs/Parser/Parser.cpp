@@ -20,6 +20,7 @@ const std::vector<std::string> validLabels {
     "server_root",
     "cgi_server_pass",
     "cgi_dir",
+    "working_threads",
 };
 
 static bool isValidLabel(const token& _token) {

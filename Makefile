@@ -34,11 +34,9 @@ SRCS_NAMES		=	main.cpp \
 SRCS		= $(addprefix $(SRC_DIR), $(SRCS_NAMES))
 
 NUM_THREADS	= $(shell nproc)
-CXXFLAGS	+= -D_NUM_THREADS=$(NUM_THREADS)
 
 ifeq ($(MODE), Debug)
 	CXXFLAGS += -D_DEBUG -g -fsanitize=address
-#-fsanitize=undefined
 else
 	CXXFLAGS += -O2 -march=native
 endif

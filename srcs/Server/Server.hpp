@@ -20,6 +20,7 @@ public:
     void setContentTypeCollection(ContentTypeCollection* contentTypes);
     void setServerRoot(const std::string& serverRoot);
     void setCgiDirectory(const std::string& cgiDirectory);
+    void setThreadsCount(int threadsCount);
     void addLocation(const std::string& locationName, const std::string& locationRoot);
     void addExecutor(const std::string& extention, const std::string& executor);
     void checkServerInstance();
@@ -44,6 +45,7 @@ private:
     std::string             m_cgiDirectory;
     int                     m_epollFd;
     int                     m_serverSocket;
+    int                     m_threadsCount;
     uint16_t                m_listenPort;
     bool                    m_isRunning;
 };

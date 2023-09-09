@@ -1,7 +1,9 @@
 #include <Selector.hpp>
 #include <ContentTypeCollection.hpp>
 #include <ClientHandler.hpp>
+#include <Log.hpp>
 
+#ifdef _DEBUG
 static void debug_epoll_event(epoll_event ev){
        printf("fd(%d), ev.events:", ev.data.fd);
 
@@ -33,6 +35,7 @@ static void debug_epoll_event(epoll_event ev){
        printf("\n");
 
 }
+#endif
 
 Selector::Selector(int serverSocket, int epollSocket,
                     Locations* locations,
@@ -53,15 +56,16 @@ Selector::Selector(int serverSocket, int epollSocket,
 {
 }
 
-void Selector::run()
-{
+void Selector::run(ThreadPool& tp) {
     int eventsOccuredNum = epoll_wait(m_epollSocket, m_events, EVENTS_NUM, INFINITE);
     if(eventsOccuredNum == -1) {
         checkError(true, "epoll interface got broken on wait");
         std::terminate();
     }
     for(int i = 0; i < eventsOccuredNum; ++i) {
+#ifdef _DEBUG
         debug_epoll_event(m_events[i]);
+#endif
         if(m_events[i].data.fd == m_serverSocket) {
             // new connection
             sockaddr_in clientAddress;
@@ -69,16 +73,17 @@ void Selector::run()
             struct epoll_event clientEvent;
             int clientSocket = accept(m_serverSocket, ( sockaddr* )&clientAddress, &clientAddressSize);
             checkError(clientSocket == -1, "can't accept client");
-            checkError(fcntl(clientSocket, F_SETFL, O_NONBLOCK) == -1, 
+            checkError(fcntl(clientSocket, F_SETFL, O_NONBLOCK) == -1,
                 "client wants to work only in blocking mode");
             clientEvent.data.fd = clientSocket;
             clientEvent.events = EPOLLIN | EPOLLET;
             checkError(epoll_ctl(m_epollSocket, EPOLL_CTL_ADD, clientSocket, &clientEvent) == -1,
                 "addidng client to epoll");
+            LogMessage("new client connection, socket number: " + std::to_string(clientSocket));
         } else {
             // msg from previosly traced connection
             ClientHandler clientHandler(m_serverRoot, m_CGILocation, m_serverName, m_locations, m_contentTypes, m_allowedCGI, m_events[i].data.fd);
-            clientHandler.HandleRequest();
+            tp.addTask(std::move(clientHandler));
         }
     }
 }

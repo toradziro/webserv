@@ -67,8 +67,10 @@ inline bool validateLocation(std::string serverRoot, std::string requestedLocati
     if(requestedLocation[requestedLocation.size() - 1] != '/') {
         requestedLocation += '/';
     }
+#ifdef _DEBUG
     std::cout << "Server root is: " << serverRoot << std::endl;
     std::cout << "Requested location is: " << requestedLocation << std::endl;
+#endif
     for(size_t i = 0; i < serverRoot.size(); ++i) {
         if(serverRoot[i] != requestedLocation[i]) {
             return false;

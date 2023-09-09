@@ -41,8 +41,6 @@ void CGI::processCGI() {
         return;
     }
 
-    std::cout << "==" << argForExec[0] << "====" << argForExec[1] << "==" << std::endl;
-
     int readFd[2];
 	int writeFd[2];
     char buffer[bufferSize];
@@ -56,7 +54,9 @@ void CGI::processCGI() {
     // lock mutex to protect evrions be rewriten by other threads
     evrionsMutex.lock();
     for(auto& it : m_envs) {
+#ifdef _DEBUG
         std::cout << it.first << "====" << it.second << std::endl;
+#endif
         setenv(it.first.c_str(), it.second.c_str(), 1);
     }
     pid_t child = fork();
@@ -88,7 +88,9 @@ void CGI::processCGI() {
             m_outputBuffer += std::string(buffer);
         }
         close(readFd[readEnd]);
+#ifdef _DEBUG
         std::cout << m_outputBuffer << std::endl;
+#endif
     } else {
         evrionsMutex.unlock();
         setError("fork didn't work");

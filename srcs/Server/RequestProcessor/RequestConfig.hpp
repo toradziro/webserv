@@ -24,6 +24,7 @@ struct RequestConfig {
     std::string             m_location;
     std::string             m_queryString;
     std::string             m_serverName;
+    std::string             m_requestStringName;
     ContentTypeCollection*  m_contentTypes;
     AllowedCGIExecutors*    m_allowedCGI;
     RequestType             m_reqType;

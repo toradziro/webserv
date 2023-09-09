@@ -3,6 +3,7 @@
 #include <CommonResponseSender.hpp>
 #include <ErrorSender.hpp>
 #include <CGI.hpp>
+#include <Log.hpp>
 
 PostRequestHandler::PostRequestHandler(RequestConfig requestConfig) : 
                 m_requestConfig(std::move(requestConfig))
@@ -23,7 +24,12 @@ void PostRequestHandler::prepareResponce() {
     }
     // m_requestConfig.entityHeaderTable.debugPrint();
     CGI cgiProcessor(m_requestConfig);
-    cgiProcessor.processCGI();
+    try {
+        cgiProcessor.processCGI();
+    } catch(CException* e) {
+        LogMessage(e->getDescription());
+        delete e;
+    }
     if(cgiProcessor.isError()) {
         sendError(ErrorCode::EC_500, m_requestConfig.m_clientFd);
         m_isError = true;

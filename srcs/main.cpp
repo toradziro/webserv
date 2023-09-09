@@ -2,16 +2,10 @@
 #include <Parser.hpp>
 #include <Server.hpp>
 #include <ServerCreator.hpp>
-
-volatile std::sig_atomic_t gSignalStatus = 0;
+#include <Log.hpp>
 
 static void usage(char* progName) {
     std::cout << "Usage: " << progName << " <config_name.conf>" << std::endl;
-}
-
-extern "C" void signalHandler(int signum) {
-   std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
-   gSignalStatus = signum;  
 }
 
 int main(int argc, char** argv) {
@@ -20,9 +14,6 @@ int main(int argc, char** argv) {
         usage(argv[0]);
         exit(EXIT_FAILURE);
     }
-
-    // Register signal to handle close properly
-    std::signal(SIGQUIT, signalHandler);
 
     try {
         Config* serverConfig = Parser::parseConfig(argv[1]);
@@ -38,8 +29,8 @@ int main(int argc, char** argv) {
         server->prepareForStart();
         server->start();
         delete server;
-    } catch (CException* e) {
-        std::cout << e->getDescription() << std::endl;
+    } catch(CException* e) {
+        LogMessage(e->getDescription());
         delete e;
     }
 

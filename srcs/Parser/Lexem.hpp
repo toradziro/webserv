@@ -93,4 +93,19 @@ private:
     ConfigErrors* m_errors;
 };
 
+//working_threads
+class WorkingThreads : public InterfaceLexem {
+public:
+    WorkingThreads(ConfigErrors* errors) : m_errors(errors) {}
+    ~WorkingThreads() {}
+    // Interface realization
+    void parseLexem(const std::vector<token> tokens, size_t& currentIndex) override;
+    void addToServer(Server* serv) override;
+
+private:
+    int           m_threadsCount = -1;
+
+    ConfigErrors* m_errors;
+};
+
 InterfaceLexem* createLexemByToken(const token& _token, ConfigErrors* errors);

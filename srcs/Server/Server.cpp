@@ -1,11 +1,13 @@
 #include <Server.hpp>
 #include <Selector.hpp>
 #include <FileFuncs.hpp>
+#include <ThreadPool.hpp>
+#include <Log.hpp>
 
 extern std::sig_atomic_t gSignalStatus;
 
 Server::Server() : m_contentTypes(nullptr), m_epollEvent{}, m_ipAddress(""), m_serverName(""), 
-                    m_epollFd(-1), m_serverSocket(-1), m_listenPort(0), m_isRunning(false)
+                    m_epollFd(-1), m_serverSocket(-1), m_threadsCount(-1), m_listenPort(0), m_isRunning(false)
 {
 }
 
@@ -31,6 +33,10 @@ void Server::setServerRoot(const std::string& serverRoot) {
 
 void Server::setCgiDirectory(const std::string& cgiDirectory) {
     m_cgiDirectory = cgiDirectory;
+}
+
+void Server::setThreadsCount(int threadsCount) {
+    m_threadsCount = threadsCount;
 }
 
 void Server::addLocation(const std::string& locationName, const std::string& locationRoot) {
@@ -74,7 +80,6 @@ void Server::prepareForStart() {
     checkError(m_epollFd == -1, "couldn't create epoll instance");
 
     // Set up epoll in "Level Trigger" mode
-    // m_epollEvent.events = EPOLLIN;
     m_epollEvent.events = EPOLLIN;
     m_epollEvent.data.fd = m_serverSocket;
     checkError(epoll_ctl(m_epollFd, EPOLL_CTL_ADD, m_serverSocket, &m_epollEvent) == -1,
@@ -82,21 +87,25 @@ void Server::prepareForStart() {
     if(m_serverRoot == "") {
         m_serverRoot = GetCurrentDirectory();
     }
-    std::cout << "Succesfully prepared server" << std::endl;
-    std::cout << m_cgiDirectory << std::endl;
+    LogMessage("Succesfully prepared server");
 }
 
 void Server::start() {
     m_isRunning = true;
     Selector selector(m_serverSocket, m_epollFd, &m_locations, m_contentTypes, &m_executors, m_serverRoot, m_cgiDirectory, m_serverName);
+    if(m_threadsCount == -1)
+        m_threadsCount = std::thread::hardware_concurrency();
+    ThreadPool threadsPool(m_threadsCount);
 #ifdef _MEMORY_PROFILE
     int iterationCount = 0;
 #endif
     while(m_isRunning) {
-        if(gSignalStatus != 0) {
-            m_isRunning = false;
-        }
-        selector.run();
+    try {
+        selector.run(threadsPool);
+    } catch(CException* e) {
+        LogMessage(e->getDescription());
+        delete e;
+    }
 #ifdef _MEMORY_PROFILE
 # ifndef _CICLE_COUNT
 # define _CICLE_COUNT 4
